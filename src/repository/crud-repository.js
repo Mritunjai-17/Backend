@@ -1,0 +1,57 @@
+class CrudRepository {
+  constructor(model) {
+    this.model = model;
+  }
+
+  async create(data) {
+    try {
+      const result = await this.model.create(data);
+      return result;
+    } catch (error) {
+      console.error("Something went wrong in the crud repository: create");
+      throw error;
+    }
+  }
+
+  async destroy(id) {
+    try {
+      const result = await this.model.findByIdAndDelete(id);
+      return result;
+    } catch (error) {
+      console.error("Something went wrong in the crud repository: destroy");
+      throw error;
+    }
+  }
+
+  async get(id) {
+    try {
+      const result = await this.model.findById(id);
+      return result;
+    } catch (error) {
+      console.error("Something went wrong in the crud repository: get");
+      throw error;
+    }
+  }
+
+  async getAll() {
+    try {
+      const result = await this.model.find({});
+      return result;
+    } catch (error) {
+      console.error("Something went wrong in the crud repository: getAll");
+      throw error;
+    }
+  }
+
+  async update(id, data) {
+    try {
+      const result = await this.model.findByIdAndUpdate(id, data, { new: true, runValidators: true });
+      return result;
+    } catch (error) {
+      console.error("Something went wrong in the crud repository: update");
+      throw error;
+    }
+  }
+}
+
+module.exports = CrudRepository;
