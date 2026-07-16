@@ -38,9 +38,9 @@ const connectDB = async () => {
     console.warn('WARNING: Running in Standalone Offline Mode (In-Memory Auth).');
     console.warn('All CMS data will use default fallback credentials.');
     console.warn('------------------------------------------------------------');
-    
+
     // Disconnect Mongoose to prevent query buffering/hanging
-    await mongoose.disconnect().catch(() => {});
+    await mongoose.disconnect().catch(() => { });
   }
 };
 
