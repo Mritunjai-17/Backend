@@ -18,7 +18,8 @@ const setupAndStartServer = () => {
   const allowedOrigins = [
     'http://localhost:5173',
     'http://localhost:8080',
-    process.env.CLIENT_URL
+    process.env.CLIENT_URL,
+    process.env.RENDER_EXTERNAL_URL
   ].filter(Boolean);
 
   const corsOptions = {
@@ -27,7 +28,8 @@ const setupAndStartServer = () => {
       if (
         origin.startsWith('http://localhost:') || 
         origin.startsWith('http://127.0.0.1:') ||
-        allowedOrigins.includes(origin)
+        allowedOrigins.includes(origin) ||
+        origin.includes('.onrender.com')
       ) {
         return callback(null, true);
       }
@@ -36,7 +38,6 @@ const setupAndStartServer = () => {
     credentials: true,
     optionsSuccessStatus: 200
   };
-  app.use(cors(corsOptions));
 
   // Parsing Middlewares
   app.use(express.json());
@@ -51,8 +52,8 @@ const setupAndStartServer = () => {
     });
   });
 
-  // Mount API router under /api
-  app.use('/api', apiRoutes);
+  // Mount API router under /api with CORS enabled specifically for API endpoints
+  app.use('/api', cors(corsOptions), apiRoutes);
 
   // Serve static files from the frontend build
   app.use(express.static(path.join(__dirname, '../CMS_Frontend/dist')));
