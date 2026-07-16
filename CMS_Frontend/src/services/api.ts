@@ -1,4 +1,5 @@
-const API_BASE_URL = 'http://localhost:5000/api/v1';
+const isProduction = typeof window !== 'undefined' && window.location.hostname !== 'localhost';
+const API_BASE_URL = isProduction ? '/api/v1' : 'http://localhost:5000/api/v1';
 
 export interface Blog {
   _id: string;
@@ -14,7 +15,8 @@ export const apiService = {
   // Check if API backend is running
   checkBackendHealth: async (): Promise<boolean> => {
     try {
-      const res = await fetch('http://localhost:5000/', { method: 'GET' });
+      const baseUrl = isProduction ? '' : 'http://localhost:5000';
+      const res = await fetch(`${baseUrl}/`, { method: 'GET' });
       return res.ok;
     } catch {
       return false;

@@ -54,6 +54,14 @@ const setupAndStartServer = () => {
   // Mount API router under /api
   app.use('/api', apiRoutes);
 
+  // Serve static files from the frontend build
+  app.use(express.static(path.join(__dirname, '../CMS_Frontend/dist')));
+
+  // Wildcard route to serve index.html for client-side routing (Single Page Application fallback)
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../CMS_Frontend/dist/index.html'));
+  });
+
   // Global error handler
   app.use((err, req, res, next) => {
     console.error(err.stack);
