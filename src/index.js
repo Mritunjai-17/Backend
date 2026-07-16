@@ -43,8 +43,8 @@ const setupAndStartServer = () => {
   app.use(express.urlencoded({ extended: true }));
   app.use(cookieParser());
 
-  // Root health check endpoint
-  app.get('/', (req, res) => {
+  // Health check endpoint
+  app.get('/api/health', (req, res) => {
     res.json({
       success: true,
       message: 'Midis CMS API Server'
