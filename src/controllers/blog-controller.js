@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const sanitizeHtml = require('sanitize-html');
 const BlogService = require('../services/blog-service');
 
 const blogService = new BlogService();
@@ -13,6 +14,27 @@ const OFFLINE_BLOG = {
   updatedAt: new Date('2026-07-17T00:00:00.000Z').toISOString()
 };
 
+// HTML Sanitizer to prevent XSS while preserving rich formatting
+const sanitizeBlogContent = (html) => {
+  if (!html) return '';
+  return sanitizeHtml(html, {
+    allowedTags: sanitizeHtml.defaults.allowedTags.concat([
+      'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'img', 'hr', 'u', 'span', 'div', 'pre', 'code', 'table', 'thead', 'tbody', 'tr', 'th', 'td'
+    ]),
+    allowedAttributes: {
+      a: ['href', 'name', 'target', 'rel'],
+      img: ['src', 'alt', 'title', 'width', 'height', 'style', 'class', 'srcset'],
+      '*': ['class', 'style', 'id']
+    },
+    allowedStyles: {
+      '*': {
+        // Allow all style properties to preserve CKEditor and MS Word formatting
+        '*': [/.*/]
+      }
+    }
+  });
+};
+
 const create = async (req, res) => {
   const isDBConnected = mongoose.connection.readyState === 1;
   if (!isDBConnected) {
@@ -24,7 +46,7 @@ const create = async (req, res) => {
     });
   }
 
-  const { title, content, coverImage } = req.body;
+  const { title, content, coverImage, excerpt, category, author, tags, status, publishedAt } = req.body;
 
   if (!title || !content) {
     return res.status(400).json({
@@ -36,7 +58,18 @@ const create = async (req, res) => {
   }
 
   try {
-    const response = await blogService.createBlog({ title, content, coverImage });
+    const sanitizedContent = sanitizeBlogContent(content);
+    const response = await blogService.createBlog({
+      title,
+      content: sanitizedContent,
+      coverImage,
+      excerpt,
+      category,
+      author,
+      tags,
+      status,
+      publishedAt
+    });
     return res.status(201).json({
       success: true,
       message: 'Successfully created a blog',
@@ -176,7 +209,11 @@ const update = async (req, res) => {
   }
 
   try {
-    const response = await blogService.updateBlog(req.params.id, req.body);
+    const updateData = { ...req.body };
+    if (updateData.content !== undefined) {
+      updateData.content = sanitizeBlogContent(updateData.content);
+    }
+    const response = await blogService.updateBlog(req.params.id, updateData);
     if (!response) {
       return res.status(404).json({
         success: false,

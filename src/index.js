@@ -58,6 +58,9 @@ const setupAndStartServer = () => {
   // Serve static files from the frontend build
   app.use(express.static(path.join(__dirname, '../CMS_Frontend/dist')));
 
+  // Serve uploaded files statically
+  app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
   // Wildcard route to serve index.html for client-side routing (Single Page Application fallback)
   app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../CMS_Frontend/dist/index.html'));

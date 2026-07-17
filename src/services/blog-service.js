@@ -54,6 +54,12 @@ class BlogService {
       if (data.title !== undefined) blog.title = data.title;
       if (data.content !== undefined) blog.content = data.content;
       if (data.coverImage !== undefined) blog.coverImage = data.coverImage;
+      if (data.excerpt !== undefined) blog.excerpt = data.excerpt;
+      if (data.category !== undefined) blog.category = data.category;
+      if (data.author !== undefined) blog.author = data.author;
+      if (data.tags !== undefined) blog.tags = data.tags;
+      if (data.status !== undefined) blog.status = data.status;
+      if (data.publishedAt !== undefined) blog.publishedAt = data.publishedAt;
 
       await blog.save();
       return blog;

@@ -18,6 +18,31 @@ const BlogSchema = new mongoose.Schema(
     slug: {
       type: String,
       unique: true
+    },
+    excerpt: {
+      type: String,
+      default: ''
+    },
+    category: {
+      type: String,
+      default: ''
+    },
+    author: {
+      type: String,
+      default: ''
+    },
+    tags: {
+      type: [String],
+      default: []
+    },
+    status: {
+      type: String,
+      enum: ['draft', 'published'],
+      default: 'draft'
+    },
+    publishedAt: {
+      type: Date,
+      default: Date.now
     }
   },
   {

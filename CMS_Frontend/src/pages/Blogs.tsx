@@ -1,6 +1,7 @@
 import { useState, useEffect, type FormEvent } from 'react';
 import { apiService, type Blog } from '../services/api';
-import { InputField, TextAreaField } from '../components/FormElements';
+import { InputField } from '../components/FormElements';
+import RichTextEditor from '../components/RichTextEditor';
 import { 
   Plus, 
   Edit2, 
@@ -27,6 +28,7 @@ export default function Blogs() {
   const [coverImage, setCoverImage] = useState<string>('');
   const [submitLoading, setSubmitLoading] = useState<boolean>(false);
   const [formError, setFormError] = useState<string>('');
+  const [isUploadingImage, setIsUploadingImage] = useState<boolean>(false);
 
   // Delete confirmation state
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState<boolean>(false);
@@ -265,15 +267,17 @@ export default function Blogs() {
                   disabled={submitLoading}
                 />
 
-                <TextAreaField
-                  label="Content (Markdown/Plain Text)"
-                  placeholder="Write your article details here..."
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  required
-                  disabled={submitLoading}
-                  style={{ minHeight: '180px' }}
-                />
+                <div style={{ marginBottom: '1.25rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
+                    Content
+                  </label>
+                  <RichTextEditor
+                    value={content}
+                    onChange={setContent}
+                    onUploadingChange={setIsUploadingImage}
+                    disabled={submitLoading}
+                  />
+                </div>
               </div>
 
               <div className="modal-footer">
@@ -288,13 +292,15 @@ export default function Blogs() {
                 <button 
                   type="submit" 
                   className="btn btn-primary"
-                  disabled={submitLoading}
+                  disabled={submitLoading || isUploadingImage}
                 >
                   {submitLoading ? (
                     <>
                       <Loader2 size={16} className="spinner-loader" style={styles.btnSpinner} />
                       Saving...
                     </>
+                  ) : isUploadingImage ? (
+                    'Uploading...'
                   ) : (
                     'Save Post'
                   )}

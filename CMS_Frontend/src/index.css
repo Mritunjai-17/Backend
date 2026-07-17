@@ -516,3 +516,151 @@ select.form-input {
     margin-left: var(--sidebar-width);
   }
 }
+
+/* CKEditor 5 premium dark theme overrides */
+.rich-text-editor-container {
+  margin-top: 0.5rem;
+  margin-bottom: 1.5rem;
+  width: 100%;
+}
+
+.rich-text-editor-container .ck-editor {
+  --ck-color-base-border: var(--border-color);
+  --ck-color-base-background: var(--bg-tertiary);
+  --ck-color-toolbar-background: var(--bg-secondary);
+  --ck-color-toolbar-border: var(--border-color);
+  --ck-color-text: var(--text-primary);
+  --ck-color-panel-background: var(--bg-tertiary);
+  --ck-color-panel-border: var(--border-color);
+  --ck-color-list-background: var(--bg-tertiary);
+  --ck-color-list-button-hover-background: var(--bg-secondary);
+  --ck-color-button-default-hover-background: var(--bg-tertiary);
+  --ck-color-button-default-active-background: var(--primary);
+  --ck-color-button-on-background: var(--bg-tertiary);
+  --ck-color-button-on-hover-background: var(--bg-secondary);
+  --ck-color-dropdown-panel-background: var(--bg-tertiary);
+  --ck-color-dropdown-panel-border: var(--border-color);
+  --ck-color-input-background: var(--bg-primary);
+  --ck-color-input-border: var(--border-color);
+  --ck-color-input-text: var(--text-primary);
+  --ck-color-shadow: rgba(0, 0, 0, 0.3);
+}
+
+/* Adjust Editor input box styles */
+.rich-text-editor-container .ck-editor__editable_inline {
+  background-color: var(--bg-tertiary) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-color) !important;
+  border-top: none !important;
+  border-bottom-left-radius: var(--border-radius-md) !important;
+  border-bottom-right-radius: var(--border-radius-md) !important;
+  min-height: 350px;
+  padding: 1.5rem !important;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.rich-text-editor-container .ck-editor__editable_inline:focus {
+  border-color: var(--border-focus) !important;
+  outline: none !important;
+  box-shadow: 0 0 0 3px var(--primary-glow) !important;
+}
+
+/* Adjust Toolbar Styles */
+.rich-text-editor-container .ck.ck-toolbar {
+  border: 1px solid var(--border-color) !important;
+  border-top-left-radius: var(--border-radius-md) !important;
+  border-top-right-radius: var(--border-radius-md) !important;
+  background-color: var(--bg-secondary) !important;
+  padding: 0.5rem !important;
+}
+
+/* Adjust Buttons inside Toolbar */
+.rich-text-editor-container .ck.ck-button {
+  color: var(--text-secondary) !important;
+  cursor: pointer;
+  border-radius: var(--border-radius-sm);
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.rich-text-editor-container .ck.ck-button:hover {
+  background-color: var(--bg-tertiary) !important;
+  color: var(--text-primary) !important;
+}
+
+.rich-text-editor-container .ck.ck-button.ck-on {
+  background-color: var(--primary) !important;
+  color: #ffffff !important;
+}
+
+.rich-text-editor-container .ck.ck-button.ck-on:hover {
+  background-color: var(--primary-hover) !important;
+}
+
+/* Dropdowns and Lists */
+.rich-text-editor-container .ck.ck-dropdown__panel {
+  background-color: var(--bg-tertiary) !important;
+  border: 1px solid var(--border-color) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+}
+
+.rich-text-editor-container .ck.ck-list {
+  background-color: var(--bg-tertiary) !important;
+}
+
+.rich-text-editor-container .ck.ck-list__item {
+  background-color: var(--bg-tertiary) !important;
+}
+
+.rich-text-editor-container .ck.ck-list__item .ck-button {
+  background-color: var(--bg-tertiary) !important;
+  color: var(--text-secondary) !important;
+  border-radius: 0 !important;
+}
+
+.rich-text-editor-container .ck.ck-list__item .ck-button:hover {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+}
+
+.rich-text-editor-container .ck.ck-list__item .ck-button.ck-on {
+  background-color: var(--primary) !important;
+  color: #ffffff !important;
+}
+
+/* Tables, Code Blocks, Blockquotes rendering inside editor */
+.rich-text-editor-container .ck-content pre {
+  background-color: var(--bg-primary) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: var(--border-radius-sm);
+  color: #e2e8f0 !important;
+  padding: 1rem !important;
+}
+
+.rich-text-editor-container .ck-content blockquote {
+  border-left: 4px solid var(--primary) !important;
+  color: var(--text-secondary) !important;
+  background-color: var(--bg-secondary) !important;
+  padding: 0.75rem 1.25rem !important;
+  font-style: italic;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.rich-text-editor-container .ck-content table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1.5rem 0;
+}
+
+.rich-text-editor-container .ck-content table td,
+.rich-text-editor-container .ck-content table th {
+  border: 1px solid var(--border-color) !important;
+  padding: 0.75rem !important;
+}
+
+.rich-text-editor-container .ck-content table th {
+  background-color: var(--bg-secondary) !important;
+  font-weight: 600;
+}
+
