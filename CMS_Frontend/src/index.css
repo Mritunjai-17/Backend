@@ -517,7 +517,7 @@ select.form-input {
   }
 }
 
-/* CKEditor 5 premium dark theme overrides */
+/* CKEditor 5 premium light theme overrides */
 .rich-text-editor-container {
   margin-top: 0.5rem;
   margin-bottom: 1.5rem;
@@ -525,32 +525,32 @@ select.form-input {
 }
 
 .rich-text-editor-container .ck-editor {
-  --ck-color-base-border: var(--border-color);
-  --ck-color-base-background: var(--bg-tertiary);
-  --ck-color-toolbar-background: var(--bg-secondary);
-  --ck-color-toolbar-border: var(--border-color);
-  --ck-color-text: var(--text-primary);
-  --ck-color-panel-background: var(--bg-tertiary);
-  --ck-color-panel-border: var(--border-color);
-  --ck-color-list-background: var(--bg-tertiary);
-  --ck-color-list-button-hover-background: var(--bg-secondary);
-  --ck-color-button-default-hover-background: var(--bg-tertiary);
-  --ck-color-button-default-active-background: var(--primary);
-  --ck-color-button-on-background: var(--bg-tertiary);
-  --ck-color-button-on-hover-background: var(--bg-secondary);
-  --ck-color-dropdown-panel-background: var(--bg-tertiary);
-  --ck-color-dropdown-panel-border: var(--border-color);
-  --ck-color-input-background: var(--bg-primary);
-  --ck-color-input-border: var(--border-color);
-  --ck-color-input-text: var(--text-primary);
-  --ck-color-shadow: rgba(0, 0, 0, 0.3);
+  --ck-color-base-border: #cbd5e1;
+  --ck-color-base-background: #ffffff;
+  --ck-color-toolbar-background: #f8fafc;
+  --ck-color-toolbar-border: #cbd5e1;
+  --ck-color-text: #0f172a;
+  --ck-color-panel-background: #ffffff;
+  --ck-color-panel-border: #cbd5e1;
+  --ck-color-list-background: #ffffff;
+  --ck-color-list-button-hover-background: #f1f5f9;
+  --ck-color-button-default-hover-background: #f1f5f9;
+  --ck-color-button-default-active-background: #e2e8f0;
+  --ck-color-button-on-background: #e2e8f0;
+  --ck-color-button-on-hover-background: #cbd5e1;
+  --ck-color-dropdown-panel-background: #ffffff;
+  --ck-color-dropdown-panel-border: #cbd5e1;
+  --ck-color-input-background: #ffffff;
+  --ck-color-input-border: #cbd5e1;
+  --ck-color-input-text: #0f172a;
+  --ck-color-shadow: rgba(0, 0, 0, 0.15);
 }
 
 /* Adjust Editor input box styles */
 .rich-text-editor-container .ck-editor__editable_inline {
-  background-color: var(--bg-tertiary) !important;
-  color: var(--text-primary) !important;
-  border: 1px solid var(--border-color) !important;
+  background-color: #ffffff !important;
+  color: #0f172a !important; /* Dark text for readability on white background */
+  border: 1px solid #cbd5e1 !important;
   border-top: none !important;
   border-bottom-left-radius: var(--border-radius-md) !important;
   border-bottom-right-radius: var(--border-radius-md) !important;
@@ -561,31 +561,31 @@ select.form-input {
 }
 
 .rich-text-editor-container .ck-editor__editable_inline:focus {
-  border-color: var(--border-focus) !important;
+  border-color: var(--primary) !important;
   outline: none !important;
   box-shadow: 0 0 0 3px var(--primary-glow) !important;
 }
 
 /* Adjust Toolbar Styles */
 .rich-text-editor-container .ck.ck-toolbar {
-  border: 1px solid var(--border-color) !important;
+  border: 1px solid #cbd5e1 !important;
   border-top-left-radius: var(--border-radius-md) !important;
   border-top-right-radius: var(--border-radius-md) !important;
-  background-color: var(--bg-secondary) !important;
+  background-color: #f8fafc !important;
   padding: 0.5rem !important;
 }
 
 /* Adjust Buttons inside Toolbar */
 .rich-text-editor-container .ck.ck-button {
-  color: var(--text-secondary) !important;
+  color: #334155 !important;
   cursor: pointer;
   border-radius: var(--border-radius-sm);
   transition: background var(--transition-fast), color var(--transition-fast);
 }
 
 .rich-text-editor-container .ck.ck-button:hover {
-  background-color: var(--bg-tertiary) !important;
-  color: var(--text-primary) !important;
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
 }
 
 .rich-text-editor-container .ck.ck-button.ck-on {
@@ -599,28 +599,28 @@ select.form-input {
 
 /* Dropdowns and Lists */
 .rich-text-editor-container .ck.ck-dropdown__panel {
-  background-color: var(--bg-tertiary) !important;
-  border: 1px solid var(--border-color) !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+  background-color: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
 }
 
 .rich-text-editor-container .ck.ck-list {
-  background-color: var(--bg-tertiary) !important;
+  background-color: #ffffff !important;
 }
 
 .rich-text-editor-container .ck.ck-list__item {
-  background-color: var(--bg-tertiary) !important;
+  background-color: #ffffff !important;
 }
 
 .rich-text-editor-container .ck.ck-list__item .ck-button {
-  background-color: var(--bg-tertiary) !important;
-  color: var(--text-secondary) !important;
+  background-color: #ffffff !important;
+  color: #334155 !important;
   border-radius: 0 !important;
 }
 
 .rich-text-editor-container .ck.ck-list__item .ck-button:hover {
-  background-color: var(--bg-secondary) !important;
-  color: var(--text-primary) !important;
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
 }
 
 .rich-text-editor-container .ck.ck-list__item .ck-button.ck-on {
@@ -630,17 +630,17 @@ select.form-input {
 
 /* Tables, Code Blocks, Blockquotes rendering inside editor */
 .rich-text-editor-container .ck-content pre {
-  background-color: var(--bg-primary) !important;
-  border: 1px solid var(--border-color) !important;
+  background-color: #f1f5f9 !important;
+  border: 1px solid #e2e8f0 !important;
   border-radius: var(--border-radius-sm);
-  color: #e2e8f0 !important;
+  color: #0f172a !important;
   padding: 1rem !important;
 }
 
 .rich-text-editor-container .ck-content blockquote {
   border-left: 4px solid var(--primary) !important;
-  color: var(--text-secondary) !important;
-  background-color: var(--bg-secondary) !important;
+  color: #475569 !important;
+  background-color: #f8fafc !important;
   padding: 0.75rem 1.25rem !important;
   font-style: italic;
   margin-left: 0;
@@ -655,12 +655,13 @@ select.form-input {
 
 .rich-text-editor-container .ck-content table td,
 .rich-text-editor-container .ck-content table th {
-  border: 1px solid var(--border-color) !important;
+  border: 1px solid #cbd5e1 !important;
   padding: 0.75rem !important;
+  color: #0f172a !important;
 }
 
 .rich-text-editor-container .ck-content table th {
-  background-color: var(--bg-secondary) !important;
+  background-color: #f1f5f9 !important;
   font-weight: 600;
 }
 
