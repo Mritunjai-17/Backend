@@ -125,5 +125,28 @@ export const apiService = {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.error || 'Failed to delete blog');
     }
+  },
+
+  // Contact Form Submission
+  submitContactForm: async (data: {
+    fullName: string;
+    email: string;
+    phone?: string;
+    service: string;
+    message: string;
+  }): Promise<{ success: boolean; message: string }> => {
+    const baseUrl = API_BASE_URL.replace('/v1', '');
+    const res = await fetch(`${baseUrl}/contact`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+
+    const result = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(result.error || 'Failed to submit contact request');
+    }
+
+    return result;
   }
 };
