@@ -1,8 +1,29 @@
+const mongoose = require('mongoose');
 const BlogService = require('../services/blog-service');
 
 const blogService = new BlogService();
 
+const OFFLINE_BLOG = {
+  _id: 'offline-blog-1',
+  title: 'Welcome to Midis CMS (Offline Mode)',
+  content: 'You are currently running the CMS in Standalone Offline Mode. Connect to MongoDB Atlas or a local MongoDB instance to enable persistent storage and manage blog posts.',
+  coverImage: 'https://images.unsplash.com/photo-1499750310107-5fef28a66643',
+  slug: 'welcome-to-midis-cms-offline',
+  createdAt: new Date('2026-07-17T00:00:00.000Z').toISOString(),
+  updatedAt: new Date('2026-07-17T00:00:00.000Z').toISOString()
+};
+
 const create = async (req, res) => {
+  const isDBConnected = mongoose.connection.readyState === 1;
+  if (!isDBConnected) {
+    return res.status(503).json({
+      success: false,
+      message: 'Database is offline. Blog creation is disabled in Offline Mode.',
+      data: {},
+      err: 'Service Unavailable (Offline Mode)'
+    });
+  }
+
   const { title, content, coverImage } = req.body;
 
   if (!title || !content) {
@@ -33,6 +54,16 @@ const create = async (req, res) => {
 };
 
 const destroy = async (req, res) => {
+  const isDBConnected = mongoose.connection.readyState === 1;
+  if (!isDBConnected) {
+    return res.status(503).json({
+      success: false,
+      message: 'Database is offline. Blog deletion is disabled in Offline Mode.',
+      data: {},
+      err: 'Service Unavailable (Offline Mode)'
+    });
+  }
+
   try {
     const response = await blogService.deleteBlog(req.params.id);
     if (!response) {
@@ -60,6 +91,24 @@ const destroy = async (req, res) => {
 };
 
 const get = async (req, res) => {
+  const isDBConnected = mongoose.connection.readyState === 1;
+  if (!isDBConnected) {
+    if (req.params.id === 'offline-blog-1') {
+      return res.status(200).json({
+        success: true,
+        message: 'Successfully fetched the offline fallback blog',
+        data: OFFLINE_BLOG,
+        err: {}
+      });
+    }
+    return res.status(404).json({
+      success: false,
+      message: 'Blog not found',
+      data: {},
+      err: 'Database is offline and requested blog does not exist'
+    });
+  }
+
   try {
     const response = await blogService.getBlog(req.params.id);
     if (!response) {
@@ -87,6 +136,16 @@ const get = async (req, res) => {
 };
 
 const getAll = async (req, res) => {
+  const isDBConnected = mongoose.connection.readyState === 1;
+  if (!isDBConnected) {
+    return res.status(200).json({
+      success: true,
+      message: 'Successfully fetched offline fallback blogs (Offline Mode)',
+      data: [OFFLINE_BLOG],
+      err: {}
+    });
+  }
+
   try {
     const response = await blogService.getAllBlogs();
     return res.status(200).json({
@@ -106,6 +165,16 @@ const getAll = async (req, res) => {
 };
 
 const update = async (req, res) => {
+  const isDBConnected = mongoose.connection.readyState === 1;
+  if (!isDBConnected) {
+    return res.status(503).json({
+      success: false,
+      message: 'Database is offline. Blog updates are disabled in Offline Mode.',
+      data: {},
+      err: 'Service Unavailable (Offline Mode)'
+    });
+  }
+
   try {
     const response = await blogService.updateBlog(req.params.id, req.body);
     if (!response) {
@@ -139,3 +208,4 @@ module.exports = {
   getAll,
   update
 };
+
