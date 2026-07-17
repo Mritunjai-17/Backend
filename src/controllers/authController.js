@@ -2,6 +2,9 @@ const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
+const AuthService = require('../services/auth-service');
+
+const authService = new AuthService();
 
 /**
  * Seed default admin if user collection is empty
@@ -20,11 +23,19 @@ const seedAdminUser = async () => {
         name: 'Midis Admin',
         email: adminEmail,
         password: process.env.ADMIN_PASSWORD || 'admin123',
-        role: 'admin'
+        role: 'admin',
+        isActive: true,
+        isApproved: true,
+        status: 'Approved'
       });
       console.log('Administrator account seeded successfully in MongoDB Atlas.');
     } else {
-      console.log('Database user accounts present. Skipping seeding.');
+      // Ensure the default admin is always approved
+      await User.updateOne(
+        { email: adminEmail },
+        { $set: { isApproved: true, status: 'Approved' } }
+      );
+      console.log('Database user accounts present. Skipping seeding. Default admin approval state verified.');
     }
   } catch (err) {
     console.error('Error seeding admin account:', err.message);
@@ -51,15 +62,6 @@ exports.login = async (req, res) => {
 
   const reqEmail = email.toLowerCase().trim();
   const adminEmail = (process.env.ADMIN_EMAIL || 'admin@midis.in').toLowerCase().trim();
-
-  // Validate email first
-  if (reqEmail !== adminEmail) {
-    return res.status(401).json({
-      success: false,
-      error: 'Invalid credentials'
-    });
-  }
-
   const isDBConnected = mongoose.connection.readyState === 1;
 
   try {
@@ -75,6 +77,21 @@ exports.login = async (req, res) => {
         });
       }
 
+      if (user.isActive === false) {
+        return res.status(401).json({
+          success: false,
+          error: 'Account is deactivated'
+        });
+      }
+
+      // Check if user is approved
+      if (user.isApproved === false) {
+        return res.status(403).json({
+          success: false,
+          error: 'Your administrator account is awaiting approval.'
+        });
+      }
+
       const isMatch = await user.matchPassword(password);
       if (!isMatch) {
         return res.status(401).json({
@@ -87,10 +104,19 @@ exports.login = async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role
+        role: user.role,
+        isApproved: user.isApproved,
+        status: user.status
       };
     } else {
       // 2. Offline Fallback Login Flow (Uses secure bcrypt hashing)
+      if (reqEmail !== adminEmail) {
+        return res.status(401).json({
+          success: false,
+          error: 'Invalid credentials (Offline Mode)'
+        });
+      }
+
       const seedPassword = process.env.ADMIN_PASSWORD || 'admin123';
       const hashedSeed = await bcrypt.hash(seedPassword, 10);
       const isMatch = await bcrypt.compare(password, hashedSeed);
@@ -138,6 +164,62 @@ exports.login = async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Server authentication error'
+    });
+  }
+};
+
+/**
+ * @desc    Register new user
+ * @route   POST /api/auth/register
+ * @access  Public
+ */
+exports.register = async (req, res) => {
+  const { name, email, password } = req.body;
+
+  try {
+    const isDBConnected = mongoose.connection.readyState === 1;
+    if (!isDBConnected) {
+      return res.status(500).json({
+        success: false,
+        error: 'Database connection offline. Cannot register.'
+      });
+    }
+
+    const existingUser = await authService.getUserByEmail(email);
+    if (existingUser) {
+      return res.status(409).json({
+        success: false,
+        error: 'Account already exists.'
+      });
+    }
+
+    const newUser = await authService.registerUser({
+      name,
+      email,
+      password,
+      role: 'admin',
+      isActive: true,
+      isApproved: false,
+      status: 'Pending'
+    });
+
+    res.status(201).json({
+      success: true,
+      message: 'Registration successful. Please login.',
+      user: {
+        id: newUser._id,
+        name: newUser.name,
+        email: newUser.email,
+        role: newUser.role,
+        isApproved: newUser.isApproved,
+        status: newUser.status
+      }
+    });
+  } catch (err) {
+    console.error('Registration error:', err);
+    res.status(500).json({
+      success: false,
+      error: 'Server registration error'
     });
   }
 };

@@ -88,6 +88,62 @@ const validateContactInput = (req, res, next) => {
   next();
 };
 
+const validateRegisterInput = (req, res, next) => {
+  const { name, email, password } = req.body;
+
+  // 1. Trim all inputs
+  const trimmedName = typeof name === 'string' ? name.trim() : '';
+  const trimmedEmail = typeof email === 'string' ? email.trim() : '';
+  const trimmedPassword = typeof password === 'string' ? password : '';
+
+  // 2. Validate required fields
+  if (!trimmedName) {
+    return res.status(400).json({
+      success: false,
+      error: 'Validation error: Full name is required.'
+    });
+  }
+
+  if (!trimmedEmail) {
+    return res.status(400).json({
+      success: false,
+      error: 'Validation error: Email address is required.'
+    });
+  }
+
+  if (!trimmedPassword) {
+    return res.status(400).json({
+      success: false,
+      error: 'Validation error: Password is required.'
+    });
+  }
+
+  // Email format validation
+  const emailRegex = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
+  if (!emailRegex.test(trimmedEmail)) {
+    return res.status(400).json({
+      success: false,
+      error: 'Validation error: Please provide a valid email address.'
+    });
+  }
+
+  // Password length validation
+  if (trimmedPassword.length < 8) {
+    return res.status(400).json({
+      success: false,
+      error: 'Validation error: Password must contain at least 8 characters.'
+    });
+  }
+
+  // 3. Sanitize inputs and Escape HTML to prevent XSS
+  req.body.name = escapeHTML(trimmedName);
+  req.body.email = trimmedEmail.toLowerCase();
+  req.body.password = trimmedPassword;
+
+  next();
+};
+
 module.exports = {
-  validateContactInput
+  validateContactInput,
+  validateRegisterInput
 };

@@ -4,14 +4,19 @@ interface DashboardNavbarProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
   onLogout: () => void;
+  user: any;
 }
 
-export default function DashboardNavbar({ activeTab, setActiveTab, onLogout }: DashboardNavbarProps) {
+export default function DashboardNavbar({ activeTab, setActiveTab, onLogout, user }: DashboardNavbarProps) {
   const navItems = [
     { id: 'blogs', label: 'Blogs' },
     { id: 'portfolio', label: 'Portfolio' },
     { id: 'contact', label: 'Contact Messages' }
   ];
+
+  if (user && user.isApproved) {
+    navItems.push({ id: 'admin', label: 'Admin Management' });
+  }
 
   return (
     <nav style={styles.navContainer}>

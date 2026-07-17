@@ -5,11 +5,15 @@ import Blogs from './pages/Blogs';
 import Portfolios from './pages/Portfolios';
 import Contacts from './pages/Contacts';
 import Login from './pages/Login';
+import Register from './pages/Register';
+import AdminManagement from './pages/AdminManagement';
 
 function App() {
   const [user, setUser] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<string>('blogs');
   const [loading, setLoading] = useState<boolean>(true);
+  const [authScreen, setAuthScreen] = useState<'login' | 'register'>('login');
+  const [successMsg, setSuccessMsg] = useState<string>('');
 
   // Check session status on startup
   useEffect(() => {
@@ -46,7 +50,30 @@ function App() {
 
   const renderPage = () => {
     if (!user) {
-      return <Login onLoginSuccess={handleLoginSuccess} />;
+      if (authScreen === 'register') {
+        return (
+          <Register 
+            onRegisterSuccess={(msg) => {
+              setSuccessMsg(msg);
+              setAuthScreen('login');
+            }} 
+            onNavigateToLogin={() => {
+              setSuccessMsg('');
+              setAuthScreen('login');
+            }} 
+          />
+        );
+      }
+      return (
+        <Login 
+          onLoginSuccess={handleLoginSuccess} 
+          onNavigateToRegister={() => {
+            setSuccessMsg('');
+            setAuthScreen('register');
+          }} 
+          successMessage={successMsg}
+        />
+      );
     }
 
     switch (activeTab) {
@@ -56,6 +83,8 @@ function App() {
         return <Portfolios />;
       case 'contact':
         return <Contacts />;
+      case 'admin':
+        return <AdminManagement currentUser={user} />;
       default:
         return <Blogs />;
     }
@@ -91,6 +120,7 @@ function App() {
           activeTab={activeTab} 
           setActiveTab={setActiveTab} 
           onLogout={handleLogout} 
+          user={user}
         />
       )}
 

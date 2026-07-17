@@ -21,12 +21,25 @@ const UserSchema = new mongoose.Schema(
     password: {
       type: String,
       required: [true, 'Please provide a password'],
-      minlength: [6, 'Password must be at least 6 characters']
+      minlength: [8, 'Password must be at least 8 characters']
     },
     role: {
       type: String,
       enum: ['admin'],
       default: 'admin'
+    },
+    isActive: {
+      type: Boolean,
+      default: true
+    },
+    isApproved: {
+      type: Boolean,
+      default: false
+    },
+    status: {
+      type: String,
+      enum: ['Pending', 'Approved', 'Rejected'],
+      default: 'Pending'
     }
   },
   {

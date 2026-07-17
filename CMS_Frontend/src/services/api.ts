@@ -48,6 +48,22 @@ export const apiService = {
     return res.json();
   },
 
+  register: async (name: string, email: string, password: string) => {
+    const baseUrl = API_BASE_URL.replace('/v1', '');
+    const res = await fetch(`${baseUrl}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password })
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Registration failed');
+    }
+
+    return res.json();
+  },
+
   getCurrentUser: async () => {
     try {
       const res = await fetch(`${API_BASE_URL}/auth/me`, {
@@ -227,5 +243,66 @@ export const apiService = {
     }
 
     return result.data;
+  },
+
+  // Admin Management Operations
+  getAdmins: async (search?: string, filter?: string): Promise<any> => {
+    const baseUrl = API_BASE_URL.replace('/v1', '');
+    const queryParams = new URLSearchParams();
+    if (search) queryParams.append('search', search);
+    if (filter) queryParams.append('filter', filter);
+
+    const res = await fetch(`${baseUrl}/admin/users?${queryParams.toString()}`, {
+      method: 'GET',
+      credentials: 'include'
+    });
+
+    const result = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(result.error || 'Failed to fetch administrators');
+    }
+    return result;
+  },
+
+  approveAdmin: async (id: string): Promise<any> => {
+    const baseUrl = API_BASE_URL.replace('/v1', '');
+    const res = await fetch(`${baseUrl}/admin/users/${id}/approve`, {
+      method: 'PATCH',
+      credentials: 'include'
+    });
+
+    const result = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(result.error || 'Failed to approve administrator');
+    }
+    return result;
+  },
+
+  rejectAdmin: async (id: string): Promise<any> => {
+    const baseUrl = API_BASE_URL.replace('/v1', '');
+    const res = await fetch(`${baseUrl}/admin/users/${id}/reject`, {
+      method: 'PATCH',
+      credentials: 'include'
+    });
+
+    const result = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(result.error || 'Failed to reject administrator');
+    }
+    return result;
+  },
+
+  deleteAdmin: async (id: string): Promise<any> => {
+    const baseUrl = API_BASE_URL.replace('/v1', '');
+    const res = await fetch(`${baseUrl}/admin/users/${id}`, {
+      method: 'DELETE',
+      credentials: 'include'
+    });
+
+    const result = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(result.error || 'Failed to delete administrator');
+    }
+    return result;
   }
 };

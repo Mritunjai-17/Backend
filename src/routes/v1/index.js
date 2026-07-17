@@ -4,9 +4,11 @@ const blogController = require('../../controllers/blog-controller');
 const authController = require('../../controllers/authController');
 const uploadController = require('../../controllers/upload-controller');
 const { protect } = require('../../middlewares/authMiddleware');
+const { validateRegisterInput } = require('../../middlewares/validationMiddleware');
 
 // Auth Endpoints
 router.post('/auth/login', authController.login);
+router.post('/auth/register', validateRegisterInput, authController.register);
 router.post('/auth/logout', protect, authController.logout);
 router.get('/auth/me', protect, authController.getMe);
 

@@ -66,3 +66,17 @@ exports.protect = async (req, res, next) => {
     });
   }
 };
+
+/**
+ * Verifies if user is an approved administrator
+ */
+exports.approvedAdmin = (req, res, next) => {
+  if (req.user && req.user.role === 'admin' && req.user.isApproved === true) {
+    next();
+  } else {
+    return res.status(403).json({
+      success: false,
+      error: 'Access denied. Only approved administrators are allowed.'
+    });
+  }
+};

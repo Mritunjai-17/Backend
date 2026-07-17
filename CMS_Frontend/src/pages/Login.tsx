@@ -1,13 +1,15 @@
 import { useState, type FormEvent } from 'react';
 import { apiService } from '../services/api';
-import { Shield, AlertTriangle } from 'lucide-react';
+import { Shield, AlertTriangle, CheckCircle } from 'lucide-react';
 import { InputField } from '../components/FormElements';
 
 interface LoginProps {
   onLoginSuccess: (user: any) => void;
+  onNavigateToRegister: () => void;
+  successMessage?: string;
 }
 
-export default function Login({ onLoginSuccess }: LoginProps) {
+export default function Login({ onLoginSuccess, onNavigateToRegister, successMessage }: LoginProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -38,7 +40,7 @@ export default function Login({ onLoginSuccess }: LoginProps) {
   };
 
   return (
-    <div className="login-container">
+    <div className="login-container auth-fade-in">
       <div className="glass-card login-card">
         <div className="login-header">
           <div className="login-logo">
@@ -47,6 +49,13 @@ export default function Login({ onLoginSuccess }: LoginProps) {
           <h2>Admin CMS Login</h2>
           <p>Sign in to manage Midis CMS</p>
         </div>
+
+        {successMessage && (
+          <div className="alert-banner alert-banner-success">
+            <CheckCircle size={18} />
+            <span style={{ fontSize: '0.85rem' }}>{successMessage}</span>
+          </div>
+        )}
 
         {error && (
           <div className="alert-banner alert-banner-error">
@@ -85,6 +94,19 @@ export default function Login({ onLoginSuccess }: LoginProps) {
             {loading ? 'Authenticating...' : 'Sign In'}
           </button>
         </form>
+
+        <div style={styles.footerLinkContainer}>
+          Don't have an account?{' '}
+          <button 
+            type="button" 
+            className="link-btn" 
+            onClick={onNavigateToRegister}
+            style={styles.linkBtn}
+            disabled={loading}
+          >
+            Sign Up
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -101,5 +123,23 @@ const styles: Record<string, React.CSSProperties> = {
     padding: '0.75rem',
     marginTop: '1rem',
     fontSize: '0.95rem',
+  },
+  footerLinkContainer: {
+    marginTop: '1.5rem',
+    textAlign: 'center',
+    fontSize: '0.9rem',
+    color: 'var(--text-secondary)',
+  },
+  linkBtn: {
+    background: 'none',
+    border: 'none',
+    color: 'var(--primary)',
+    fontWeight: '600',
+    cursor: 'pointer',
+    padding: 0,
+    textDecoration: 'underline',
+    fontFamily: 'inherit',
+    fontSize: 'inherit',
+    marginLeft: '0.25rem',
   }
 };
