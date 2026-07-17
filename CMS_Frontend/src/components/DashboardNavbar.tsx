@@ -10,7 +10,7 @@ export default function DashboardNavbar({ activeTab, setActiveTab, onLogout }: D
   const navItems = [
     { id: 'blogs', label: 'Blogs' },
     { id: 'portfolio', label: 'Portfolio' },
-    { id: 'contact', label: 'Contact' }
+    { id: 'contact', label: 'Contact Messages' }
   ];
 
   return (

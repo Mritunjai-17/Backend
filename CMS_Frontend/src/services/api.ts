@@ -148,5 +148,76 @@ export const apiService = {
     }
 
     return result;
+  },
+
+  // Get contact messages for admin (filtered, searchable, paginated)
+  getContacts: async (
+    page: number,
+    limit: number,
+    search: string,
+    status: string
+  ): Promise<{
+    data: any[];
+    total: number;
+    totalPages: number;
+    currentPage: number;
+    limit: number;
+  }> => {
+    const baseUrl = API_BASE_URL.replace('/v1', '');
+    const queryParams = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+      search,
+      status
+    });
+
+    const res = await fetch(`${baseUrl}/contact?${queryParams.toString()}`, {
+      method: 'GET',
+      credentials: 'include'
+    });
+
+    const result = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(result.error || 'Failed to fetch contact messages');
+    }
+
+    return result;
+  },
+
+  // Soft-delete a contact message
+  deleteContact: async (id: string): Promise<void> => {
+    const baseUrl = API_BASE_URL.replace('/v1', '');
+    const res = await fetch(`${baseUrl}/contact/${id}`, {
+      method: 'DELETE',
+      credentials: 'include'
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Failed to delete contact message');
+    }
+  },
+
+  // Update contact message properties (read state, status)
+  updateContactStatus: async (
+    id: string,
+    updateData: { status?: string; isRead?: boolean }
+  ): Promise<any> => {
+    const baseUrl = API_BASE_URL.replace('/v1', '');
+    const res = await fetch(`${baseUrl}/contact/${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(updateData),
+      credentials: 'include'
+    });
+
+    const result = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(result.error || 'Failed to update contact message status');
+    }
+
+    return result.data;
   }
 };
