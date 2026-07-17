@@ -3,28 +3,28 @@
 :root {
   --font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   
-  /* Color Palette - Midis Premium Light Theme */
-  --bg-primary: #f8fafc;
-  --bg-secondary: #ffffff;
-  --bg-tertiary: #f1f5f9;
-  --bg-glass: rgba(255, 255, 255, 0.85);
-  --border-color: rgba(15, 23, 42, 0.08);
-  --border-focus: rgba(234, 88, 12, 0.4);
+  /* Color Palette - Midis Premium Dark Theme */
+  --bg-primary: #0a0a0a;
+  --bg-secondary: #121212;
+  --bg-tertiary: #1c1c1e;
+  --bg-glass: rgba(18, 18, 18, 0.8);
+  --border-color: rgba(255, 255, 255, 0.08);
+  --border-focus: rgba(234, 88, 12, 0.5);
   
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #64748b;
+  --text-primary: #ffffff;
+  --text-secondary: #a3a3a3;
+  --text-muted: #737373;
   
   --primary: #ea580c;
-  --primary-hover: #c2410c;
-  --primary-glow: rgba(234, 88, 12, 0.15);
+  --primary-hover: #f97316;
+  --primary-glow: rgba(234, 88, 12, 0.35);
   
   --success: #10b981;
-  --success-glow: rgba(16, 185, 129, 0.1);
+  --success-glow: rgba(16, 185, 129, 0.2);
   --warning: #f59e0b;
-  --warning-glow: rgba(245, 158, 11, 0.1);
+  --warning-glow: rgba(245, 158, 11, 0.2);
   --danger: #ef4444;
-  --danger-glow: rgba(239, 68, 68, 0.1);
+  --danger-glow: rgba(239, 68, 68, 0.2);
   --info: #0ea5e9;
   
   --sidebar-width: 260px;
@@ -130,8 +130,8 @@ body {
 }
 
 .glass-card:hover {
-  border-color: rgba(15, 23, 42, 0.15);
-  box-shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.08);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
 }
 
 .glass-card.interactive:hover {
@@ -185,8 +185,8 @@ p {
 }
 
 .btn-secondary:hover {
-  background-color: rgba(15, 23, 42, 0.04);
-  border-color: rgba(15, 23, 42, 0.15);
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .btn-danger {
@@ -284,22 +284,22 @@ select.form-input {
 
 .badge-primary {
   background-color: var(--primary-glow);
-  color: var(--primary);
+  color: #a5b4fc;
 }
 
 .badge-success {
   background-color: var(--success-glow);
-  color: #047857;
+  color: #6ee7b7;
 }
 
 .badge-warning {
   background-color: var(--warning-glow);
-  color: #b45309;
+  color: #fde047;
 }
 
 .badge-danger {
   background-color: var(--danger-glow);
-  color: #b91c1c;
+  color: #fca5a5;
 }
 
 /* Tables */
@@ -336,7 +336,7 @@ select.form-input {
 }
 
 .admin-table tbody tr:hover td {
-  background-color: rgba(15, 23, 42, 0.015);
+  background-color: rgba(255, 255, 255, 0.02);
 }
 
 .admin-table tbody tr:last-child td {
@@ -350,7 +350,7 @@ select.form-input {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(15, 23, 42, 0.4);
+  background-color: rgba(0, 0, 0, 0.8);
   backdrop-filter: blur(8px);
   z-index: 1000;
   display: flex;
@@ -365,7 +365,7 @@ select.form-input {
   background-color: var(--bg-secondary);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-lg);
-  box-shadow: 0 20px 40px -15px rgba(15, 23, 42, 0.15);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.75);
   overflow: hidden;
 }
 
@@ -399,8 +399,8 @@ select.form-input {
   align-items: center;
   justify-content: center;
   padding: 1.5rem;
-  background: radial-gradient(circle at 10% 20%, rgba(234, 88, 12, 0.06) 0%, transparent 40%),
-              radial-gradient(circle at 90% 80%, rgba(139, 92, 246, 0.06) 0%, transparent 40%),
+  background: radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
+              radial-gradient(circle at 90% 80%, rgba(139, 92, 246, 0.15) 0%, transparent 40%),
               var(--bg-primary);
 }
 
@@ -440,20 +440,20 @@ select.form-input {
 
 .alert-banner-error {
   background-color: var(--danger-glow);
-  border-color: rgba(239, 68, 68, 0.15);
-  color: #b91c1c;
+  border-color: rgba(239, 68, 68, 0.2);
+  color: #fca5a5;
 }
 
 .alert-banner-success {
   background-color: var(--success-glow);
-  border-color: rgba(16, 185, 129, 0.15);
-  color: #047857;
+  border-color: rgba(16, 185, 129, 0.2);
+  color: #6ee7b7;
 }
 
 .alert-banner-info {
-  background-color: rgba(14, 165, 233, 0.05);
-  border-color: rgba(14, 165, 233, 0.15);
-  color: #0369a1;
+  background-color: rgba(14, 165, 233, 0.1);
+  border-color: rgba(14, 165, 233, 0.2);
+  color: #7dd3fc;
 }
 
 /* Dashboard Stat cards */
@@ -517,7 +517,7 @@ select.form-input {
   }
 }
 
-/* CKEditor 5 premium light theme overrides */
+/* CKEditor 5 premium dark theme overrides */
 .rich-text-editor-container {
   margin-top: 0.5rem;
   margin-bottom: 1.5rem;
@@ -525,32 +525,32 @@ select.form-input {
 }
 
 .rich-text-editor-container .ck-editor {
-  --ck-color-base-border: #cbd5e1;
-  --ck-color-base-background: #ffffff;
-  --ck-color-toolbar-background: #f8fafc;
-  --ck-color-toolbar-border: #cbd5e1;
-  --ck-color-text: #0f172a;
-  --ck-color-panel-background: #ffffff;
-  --ck-color-panel-border: #cbd5e1;
-  --ck-color-list-background: #ffffff;
-  --ck-color-list-button-hover-background: #f1f5f9;
-  --ck-color-button-default-hover-background: #f1f5f9;
-  --ck-color-button-default-active-background: #e2e8f0;
-  --ck-color-button-on-background: #e2e8f0;
-  --ck-color-button-on-hover-background: #cbd5e1;
-  --ck-color-dropdown-panel-background: #ffffff;
-  --ck-color-dropdown-panel-border: #cbd5e1;
-  --ck-color-input-background: #ffffff;
-  --ck-color-input-border: #cbd5e1;
-  --ck-color-input-text: #0f172a;
-  --ck-color-shadow: rgba(0, 0, 0, 0.15);
+  --ck-color-base-border: var(--border-color);
+  --ck-color-base-background: var(--bg-tertiary);
+  --ck-color-toolbar-background: var(--bg-secondary);
+  --ck-color-toolbar-border: var(--border-color);
+  --ck-color-text: var(--text-primary);
+  --ck-color-panel-background: var(--bg-tertiary);
+  --ck-color-panel-border: var(--border-color);
+  --ck-color-list-background: var(--bg-tertiary);
+  --ck-color-list-button-hover-background: var(--bg-secondary);
+  --ck-color-button-default-hover-background: var(--bg-tertiary);
+  --ck-color-button-default-active-background: var(--primary);
+  --ck-color-button-on-background: var(--bg-tertiary);
+  --ck-color-button-on-hover-background: var(--bg-secondary);
+  --ck-color-dropdown-panel-background: var(--bg-tertiary);
+  --ck-color-dropdown-panel-border: var(--border-color);
+  --ck-color-input-background: var(--bg-primary);
+  --ck-color-input-border: var(--border-color);
+  --ck-color-input-text: var(--text-primary);
+  --ck-color-shadow: rgba(0, 0, 0, 0.4);
 }
 
 /* Adjust Editor input box styles */
 .rich-text-editor-container .ck-editor__editable_inline {
-  background-color: #ffffff !important;
-  color: #0f172a !important; /* Dark text for readability on white background */
-  border: 1px solid #cbd5e1 !important;
+  background-color: var(--bg-tertiary) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-color) !important;
   border-top: none !important;
   border-bottom-left-radius: var(--border-radius-md) !important;
   border-bottom-right-radius: var(--border-radius-md) !important;
@@ -568,24 +568,24 @@ select.form-input {
 
 /* Adjust Toolbar Styles */
 .rich-text-editor-container .ck.ck-toolbar {
-  border: 1px solid #cbd5e1 !important;
+  border: 1px solid var(--border-color) !important;
   border-top-left-radius: var(--border-radius-md) !important;
   border-top-right-radius: var(--border-radius-md) !important;
-  background-color: #f8fafc !important;
+  background-color: var(--bg-secondary) !important;
   padding: 0.5rem !important;
 }
 
 /* Adjust Buttons inside Toolbar */
 .rich-text-editor-container .ck.ck-button {
-  color: #334155 !important;
+  color: var(--text-secondary) !important;
   cursor: pointer;
   border-radius: var(--border-radius-sm);
   transition: background var(--transition-fast), color var(--transition-fast);
 }
 
 .rich-text-editor-container .ck.ck-button:hover {
-  background-color: #f1f5f9 !important;
-  color: #0f172a !important;
+  background-color: var(--bg-tertiary) !important;
+  color: var(--text-primary) !important;
 }
 
 .rich-text-editor-container .ck.ck-button.ck-on {
@@ -599,28 +599,28 @@ select.form-input {
 
 /* Dropdowns and Lists */
 .rich-text-editor-container .ck.ck-dropdown__panel {
-  background-color: #ffffff !important;
-  border: 1px solid #cbd5e1 !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  background-color: var(--bg-tertiary) !important;
+  border: 1px solid var(--border-color) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
 }
 
 .rich-text-editor-container .ck.ck-list {
-  background-color: #ffffff !important;
+  background-color: var(--bg-tertiary) !important;
 }
 
 .rich-text-editor-container .ck.ck-list__item {
-  background-color: #ffffff !important;
+  background-color: var(--bg-tertiary) !important;
 }
 
 .rich-text-editor-container .ck.ck-list__item .ck-button {
-  background-color: #ffffff !important;
-  color: #334155 !important;
+  background-color: var(--bg-tertiary) !important;
+  color: var(--text-secondary) !important;
   border-radius: 0 !important;
 }
 
 .rich-text-editor-container .ck.ck-list__item .ck-button:hover {
-  background-color: #f1f5f9 !important;
-  color: #0f172a !important;
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
 }
 
 .rich-text-editor-container .ck.ck-list__item .ck-button.ck-on {
@@ -630,17 +630,17 @@ select.form-input {
 
 /* Tables, Code Blocks, Blockquotes rendering inside editor */
 .rich-text-editor-container .ck-content pre {
-  background-color: #f1f5f9 !important;
-  border: 1px solid #e2e8f0 !important;
+  background-color: var(--bg-primary) !important;
+  border: 1px solid var(--border-color) !important;
   border-radius: var(--border-radius-sm);
-  color: #0f172a !important;
+  color: #e2e8f0 !important;
   padding: 1rem !important;
 }
 
 .rich-text-editor-container .ck-content blockquote {
   border-left: 4px solid var(--primary) !important;
-  color: #475569 !important;
-  background-color: #f8fafc !important;
+  color: var(--text-secondary) !important;
+  background-color: var(--bg-secondary) !important;
   padding: 0.75rem 1.25rem !important;
   font-style: italic;
   margin-left: 0;
@@ -655,13 +655,13 @@ select.form-input {
 
 .rich-text-editor-container .ck-content table td,
 .rich-text-editor-container .ck-content table th {
-  border: 1px solid #cbd5e1 !important;
+  border: 1px solid var(--border-color) !important;
   padding: 0.75rem !important;
-  color: #0f172a !important;
+  color: var(--text-primary) !important;
 }
 
 .rich-text-editor-container .ck-content table th {
-  background-color: #f1f5f9 !important;
+  background-color: var(--bg-secondary) !important;
   font-weight: 600;
 }
 
