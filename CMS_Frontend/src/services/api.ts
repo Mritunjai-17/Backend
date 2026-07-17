@@ -304,5 +304,91 @@ export const apiService = {
       throw new Error(result.error || 'Failed to delete administrator');
     }
     return result;
+  },
+
+  // Portfolio Operations
+  getPortfolio: async (): Promise<any> => {
+    const baseUrl = API_BASE_URL.replace('/v1', '');
+    const res = await fetch(`${baseUrl}/portfolio`, {
+      method: 'GET',
+      credentials: 'include'
+    });
+
+    const result = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(result.error || 'Failed to fetch portfolio data');
+    }
+    return result;
+  },
+
+  updatePortfolioImage: async (imageUrl: string): Promise<any> => {
+    const baseUrl = API_BASE_URL.replace('/v1', '');
+    const res = await fetch(`${baseUrl}/portfolio/image`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ imageUrl }),
+      credentials: 'include'
+    });
+
+    const result = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(result.error || 'Failed to update portfolio image');
+    }
+    return result;
+  },
+
+  uploadPortfolioImage: async (file: File, onProgress: (percent: number) => void): Promise<{ success: boolean; url?: string; error?: string }> => {
+    return new Promise((resolve, reject) => {
+      const baseUrl = API_BASE_URL.replace('/v1', '');
+      const xhr = new XMLHttpRequest();
+      
+      xhr.open('POST', `${baseUrl}/upload/portfolio-image`);
+      xhr.withCredentials = true;
+      
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const percentComplete = Math.round((event.loaded / event.total) * 100);
+          onProgress(percentComplete);
+        }
+      };
+
+      xhr.onload = () => {
+        let response: any = {};
+        try {
+          response = JSON.parse(xhr.responseText || '{}');
+        } catch (e) {
+          response = {};
+        }
+        if (xhr.status >= 200 && xhr.status < 300) {
+          resolve(response);
+        } else {
+          reject(new Error(response.error || 'Upload failed'));
+        }
+      };
+
+      xhr.onerror = () => {
+        reject(new Error('Network error during upload'));
+      };
+
+      const formData = new FormData();
+      formData.append('image', file);
+      xhr.send(formData);
+    });
+  },
+
+  deletePortfolioImage: async (): Promise<any> => {
+    const baseUrl = API_BASE_URL.replace('/v1', '');
+    const res = await fetch(`${baseUrl}/portfolio/image`, {
+      method: 'DELETE',
+      credentials: 'include'
+    });
+
+    const result = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(result.error || 'Failed to delete portfolio image');
+    }
+    return result;
   }
 };
