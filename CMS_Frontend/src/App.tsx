@@ -74,6 +74,17 @@ function App() {
 
   return (
     <div style={styles.appContainer}>
+      {/* Midis Logo in top-left corner */}
+      {user && (
+        <a href="https://www.midis.in/" target="_blank" rel="noopener noreferrer" style={styles.logoLink}>
+          <img 
+            src="https://www.midis.in/images/midis%20final%20logo-01.png" 
+            alt="Midis Logo" 
+            style={styles.logoImg} 
+          />
+        </a>
+      )}
+
       {/* Floating Centered Pill Navbar - Rendered ONLY when logged in */}
       {user && (
         <DashboardNavbar 
@@ -94,13 +105,28 @@ function App() {
 const styles: Record<string, React.CSSProperties> = {
   appContainer: {
     minHeight: '100vh',
-    backgroundColor: '#090d16',
-    color: '#f8fafc',
+    backgroundColor: 'var(--bg-primary)',
+    color: 'var(--text-primary)',
     fontFamily: "'Plus Jakarta Sans', sans-serif",
     paddingTop: '6rem',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
+  },
+  logoLink: {
+    position: 'fixed',
+    top: '1.5rem',
+    left: '2.5rem',
+    zIndex: 1001,
+    display: 'flex',
+    alignItems: 'center',
+    cursor: 'pointer',
+    transition: 'opacity 0.2s ease',
+  },
+  logoImg: {
+    height: '24px',
+    width: 'auto',
+    objectFit: 'contain',
   },
   mainContent: {
     width: '100%',
@@ -116,15 +142,15 @@ const styles: Record<string, React.CSSProperties> = {
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#090d16',
+    backgroundColor: 'var(--bg-primary)',
     fontFamily: "'Plus Jakarta Sans', sans-serif",
   },
   spinner: {
     width: '40px',
     height: '40px',
     borderRadius: '50%',
-    border: '3px solid rgba(99, 102, 241, 0.1)',
-    borderTopColor: '#6366f1',
+    border: '3px solid var(--border-color)',
+    borderTopColor: 'var(--primary)',
   }
 };
 
