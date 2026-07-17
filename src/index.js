@@ -29,7 +29,8 @@ const setupAndStartServer = () => {
         origin.startsWith('http://localhost:') || 
         origin.startsWith('http://127.0.0.1:') ||
         allowedOrigins.includes(origin) ||
-        origin.includes('.onrender.com')
+        origin.includes('.onrender.com') ||
+        origin.includes('.vercel.app')
       ) {
         return callback(null, true);
       }
