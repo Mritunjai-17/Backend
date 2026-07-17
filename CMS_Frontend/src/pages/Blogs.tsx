@@ -1,5 +1,5 @@
 import { useState, useEffect, type FormEvent } from 'react';
-import { apiService, type Blog } from '../services/api';
+import { apiService, type Blog, API_BASE_URL } from '../services/api';
 import { InputField } from '../components/FormElements';
 import RichTextEditor from '../components/RichTextEditor';
 import { 
@@ -11,7 +11,8 @@ import {
   X, 
   Image as ImageIcon, 
   Calendar, 
-  AlertTriangle 
+  AlertTriangle,
+  Upload
 } from 'lucide-react';
 
 export default function Blogs() {
@@ -29,6 +30,7 @@ export default function Blogs() {
   const [submitLoading, setSubmitLoading] = useState<boolean>(false);
   const [formError, setFormError] = useState<string>('');
   const [isUploadingImage, setIsUploadingImage] = useState<boolean>(false);
+  const [coverUploading, setCoverUploading] = useState<boolean>(false);
 
   // Delete confirmation state
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState<boolean>(false);
@@ -69,6 +71,41 @@ export default function Blogs() {
     setCoverImage(blog.coverImage || '');
     setFormError('');
     setModalOpen(true);
+  };
+
+  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setCoverUploading(true);
+    setFormError('');
+
+    const formData = new FormData();
+    formData.append('upload', file);
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/upload`, {
+        method: 'POST',
+        body: formData,
+        credentials: 'include'
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to upload cover image');
+      }
+
+      if (data.success && data.url) {
+        setCoverImage(data.url);
+      } else {
+        throw new Error(data.message || 'Failed to retrieve cover image URL');
+      }
+    } catch (err: any) {
+      setFormError(err.message || 'Image upload failed. Please try again.');
+    } finally {
+      setCoverUploading(false);
+      e.target.value = '';
+    }
   };
 
   const handleFormSubmit = async (e: FormEvent) => {
@@ -258,14 +295,65 @@ export default function Blogs() {
                   disabled={submitLoading}
                 />
 
-                <InputField
-                  label="Cover Image URL (Optional)"
-                  type="url"
-                  placeholder="e.g. https://images.unsplash.com/photo-1518770660439-4636190af475"
-                  value={coverImage}
-                  onChange={(e) => setCoverImage(e.target.value)}
-                  disabled={submitLoading}
-                />
+                {/* Cover Image URL or File Upload */}
+                <div style={{ marginBottom: '1.25rem' }}>
+                  <label className="form-label" style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
+                    Cover Image (Optional)
+                  </label>
+                  
+                  {coverImage ? (
+                    <div style={styles.coverPreviewContainer}>
+                      <img src={coverImage} alt="Cover Preview" style={styles.coverPreviewImg} />
+                      <button 
+                        type="button" 
+                        className="btn btn-danger btn-sm" 
+                        style={styles.removeCoverBtn}
+                        onClick={() => setCoverImage('')}
+                      >
+                        <Trash2 size={14} /> Remove Cover Image
+                      </button>
+                    </div>
+                  ) : (
+                    <div style={styles.coverUploadWrapper}>
+                      <div style={{ flex: 1, minWidth: '180px' }}>
+                        <label className="btn btn-secondary" style={styles.fileUploadLabel}>
+                          {coverUploading ? (
+                            <>
+                              <Loader2 size={16} className="spinner-loader" style={styles.btnSpinner} />
+                              Uploading...
+                            </>
+                          ) : (
+                            <>
+                              <Upload size={16} />
+                              Upload from Device
+                            </>
+                          )}
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleCoverUpload}
+                            disabled={coverUploading || submitLoading}
+                            style={{ display: 'none' }}
+                          />
+                        </label>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                        OR
+                      </div>
+                      <div style={{ flex: 2, minWidth: '240px' }}>
+                        <input
+                          type="url"
+                          className="form-input"
+                          placeholder="Paste cover image URL..."
+                          value={coverImage}
+                          onChange={(e) => setCoverImage(e.target.value)}
+                          disabled={coverUploading || submitLoading}
+                          style={{ width: '100%' }}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
 
                 <div style={{ marginBottom: '1.25rem' }}>
                   <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
@@ -394,6 +482,47 @@ const styles: Record<string, React.CSSProperties> = {
     justifyContent: 'center',
     padding: '4rem 2rem',
     textAlign: 'center',
+    borderRadius: 'var(--border-radius-md)',
+  },
+  coverPreviewContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    gap: '0.75rem',
+    padding: '0.75rem',
+    backgroundColor: 'var(--bg-tertiary)',
+    border: '1px dashed var(--border-color)',
+    borderRadius: 'var(--border-radius-md)',
+  },
+  coverPreviewImg: {
+    maxHeight: '120px',
+    width: 'auto',
+    borderRadius: '6px',
+    objectFit: 'contain',
+    border: '1px solid var(--border-color)',
+  },
+  removeCoverBtn: {
+    padding: '0.375rem 0.75rem',
+    fontSize: '0.8rem',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '0.35rem',
+  },
+  coverUploadWrapper: {
+    display: 'flex',
+    gap: '1rem',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+  },
+  fileUploadLabel: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '0.5rem',
+    cursor: 'pointer',
+    width: '100%',
+    padding: '0.75rem 1rem',
+    border: '1px solid var(--border-color)',
     borderRadius: 'var(--border-radius-md)',
   },
   thumbnail: {
