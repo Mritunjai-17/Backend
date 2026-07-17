@@ -4,7 +4,7 @@ const v1ApiRoutes = require('./v1');
 const contactController = require('../controllers/contact-controller');
 const { validateContactInput } = require('../middlewares/validationMiddleware');
 const { contactRateLimiter } = require('../middlewares/rateLimiter');
-const { authenticate } = require('../middlewares/authMiddleware');
+const { protect } = require('../middlewares/authMiddleware');
 
 router.use('/v1', v1ApiRoutes);
 
@@ -12,8 +12,8 @@ router.use('/v1', v1ApiRoutes);
 router.post('/contact', contactRateLimiter, validateContactInput, contactController.create);
 
 // Admin contact dashboard routes
-router.get('/contact', authenticate, contactController.getAll);
-router.patch('/contact/:id', authenticate, contactController.update);
-router.delete('/contact/:id', authenticate, contactController.deleteContact);
+router.get('/contact', protect, contactController.getAll);
+router.patch('/contact/:id', protect, contactController.update);
+router.delete('/contact/:id', protect, contactController.deleteContact);
 
 module.exports = router;
