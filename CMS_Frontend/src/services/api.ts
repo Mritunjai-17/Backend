@@ -1,4 +1,12 @@
-export const isProduction = typeof window !== 'undefined' && window.location.hostname !== 'localhost';
+export const isDevelopment = 
+  typeof window !== 'undefined' && 
+  (window.location.hostname === 'localhost' || 
+   window.location.hostname === '127.0.0.1' || 
+   window.location.hostname.startsWith('192.168.') || 
+   window.location.hostname.startsWith('10.') || 
+   window.location.hostname.endsWith('.local'));
+
+export const isProduction = !isDevelopment;
 export const API_BASE_URL = isProduction ? '/api/v1' : 'http://localhost:5000/api/v1';
 
 export interface Blog {
