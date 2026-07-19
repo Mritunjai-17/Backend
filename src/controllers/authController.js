@@ -16,7 +16,7 @@ const seedAdminUser = async () => {
 
     const adminEmail = process.env.ADMIN_EMAIL || 'admin@midis.in';
     const userCount = await User.countDocuments();
-    
+
     if (userCount === 0) {
       console.log('User collection is empty. Seeding default administrator...');
       await User.create({
@@ -120,7 +120,7 @@ exports.login = async (req, res) => {
       const seedPassword = process.env.ADMIN_PASSWORD || 'admin123';
       const hashedSeed = await bcrypt.hash(seedPassword, 10);
       const isMatch = await bcrypt.compare(password, hashedSeed);
-      
+
       if (!isMatch) {
         return res.status(401).json({
           success: false,
@@ -134,7 +134,7 @@ exports.login = async (req, res) => {
         email: adminEmail,
         role: 'admin'
       };
-      
+
       console.log('Admin authenticated successfully via Standalone In-Memory fallback.');
     }
 

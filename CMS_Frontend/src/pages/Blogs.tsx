@@ -31,6 +31,7 @@ export default function Blogs() {
   const [formError, setFormError] = useState<string>('');
   const [isUploadingImage, setIsUploadingImage] = useState<boolean>(false);
   const [coverUploading, setCoverUploading] = useState<boolean>(false);
+  const [contentUploading, setContentUploading] = useState<boolean>(false);
 
   // Delete confirmation state
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState<boolean>(false);
@@ -60,6 +61,7 @@ export default function Blogs() {
     setContent('');
     setCoverImage('');
     setFormError('');
+    setContentUploading(false);
     setModalOpen(true);
   };
 
@@ -70,6 +72,7 @@ export default function Blogs() {
     setContent(blog.content);
     setCoverImage(blog.coverImage || '');
     setFormError('');
+    setContentUploading(false);
     setModalOpen(true);
   };
 
@@ -104,6 +107,42 @@ export default function Blogs() {
       setFormError(err.message || 'Image upload failed. Please try again.');
     } finally {
       setCoverUploading(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleContentImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setContentUploading(true);
+    setFormError('');
+
+    const formData = new FormData();
+    formData.append('upload', file);
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/upload`, {
+        method: 'POST',
+        body: formData,
+        credentials: 'include'
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to upload content image');
+      }
+
+      if (data.success && data.url) {
+        const imageTag = `<p><img src="${data.url}" alt="Uploaded content image" /></p>`;
+        setContent((prevContent) => (prevContent ? `${prevContent}\n${imageTag}` : imageTag));
+      } else {
+        throw new Error(data.message || 'Failed to retrieve image URL');
+      }
+    } catch (err: any) {
+      setFormError(err.message || 'Image upload failed. Please try again.');
+    } finally {
+      setContentUploading(false);
       e.target.value = '';
     }
   };
@@ -356,9 +395,31 @@ export default function Blogs() {
                 </div>
 
                 <div style={{ marginBottom: '1.25rem' }}>
-                  <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
-                    Content
-                  </label>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                    <label style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
+                      Content
+                    </label>
+                    <label className="btn btn-secondary" style={styles.contentUploadBtn}>
+                      {contentUploading ? (
+                        <>
+                          <Loader2 size={14} className="spinner-loader" style={styles.btnSpinner} />
+                          Uploading...
+                        </>
+                      ) : (
+                        <>
+                          <Upload size={14} />
+                          Upload Image from Device
+                        </>
+                      )}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleContentImageUpload}
+                        disabled={contentUploading || submitLoading}
+                        style={{ display: 'none' }}
+                      />
+                    </label>
+                  </div>
                   <RichTextEditor
                     value={content}
                     onChange={setContent}
@@ -544,5 +605,14 @@ const styles: Record<string, React.CSSProperties> = {
   },
   modalContentOverride: {
     maxWidth: '650px',
+  },
+  contentUploadBtn: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '0.4rem',
+    cursor: 'pointer',
+    fontSize: '0.8rem',
+    padding: '0.35rem 0.75rem',
+    borderRadius: 'var(--border-radius-md)',
   }
 };

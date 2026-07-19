@@ -190,15 +190,17 @@ export default function RichTextEditor({
         '|',
         'heading',
         '|',
-        'fontSize', 'fontColor', 'fontBackgroundColor',
-        '|',
         'bold', 'italic', 'underline',
+        '|',
+        'uploadImage', 'link',
+        '|',
+        'fontSize', 'fontColor', 'fontBackgroundColor',
         '|',
         'alignment',
         '|',
         'numberedList', 'bulletedList',
         '|',
-        'link', 'uploadImage', 'insertTable', 'blockQuote', 'codeBlock', 'horizontalLine'
+        'insertTable', 'blockQuote', 'codeBlock', 'horizontalLine'
       ]
     },
     heading: {
