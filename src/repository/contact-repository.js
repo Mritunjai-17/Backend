@@ -1,28 +1,59 @@
-const Contact = require('../models/Contact');
-const CrudRepository = require('./crud-repository');
+const Contact = require("../models/contact-model");
 
-class ContactRepository extends CrudRepository {
-  constructor() {
-    super(Contact);
+class ContactRepository {
+  async create(data) {
+    try {
+      const contact = await Contact.create(data);
+      return contact;
+    } catch (error) {
+      console.error("Error creating contact in repository:", error);
+      throw error;
+    }
   }
 
-  /**
-   * Fetch contacts with filters, pagination, and sorting
-   */
+  async getById(id) {
+    try {
+      return await Contact.findById(id);
+    } catch (error) {
+      console.error("Error finding contact by ID in repository:", error);
+      throw error;
+    }
+  }
+
   async getAllContacts(filter = {}, skip = 0, limit = 10) {
     try {
-      const query = this.model.find(filter)
+      const data = await Contact.find(filter)
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit);
-      
-      const countQuery = this.model.countDocuments(filter);
 
-      const [data, total] = await Promise.all([query, countQuery]);
-
+      const total = await Contact.countDocuments(filter);
       return { data, total };
     } catch (error) {
-      console.error("Something went wrong in the contact repository: getAllContacts");
+      console.error("Error fetching contacts in repository:", error);
+      throw error;
+    }
+  }
+
+  async update(id, updateData) {
+    try {
+      const updatedContact = await Contact.findByIdAndUpdate(
+        id,
+        updateData,
+        { new: true, runValidators: true }
+      );
+      return updatedContact;
+    } catch (error) {
+      console.error("Error updating contact in repository:", error);
+      throw error;
+    }
+  }
+
+  async delete(id) {
+    try {
+      return await Contact.findByIdAndDelete(id);
+    } catch (error) {
+      console.error("Error deleting contact in repository:", error);
       throw error;
     }
   }

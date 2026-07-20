@@ -1,4 +1,4 @@
-const ContactRepository = require('../repository/contact-repository');
+const ContactRepository = require("../repository/contact-repository");
 
 class ContactService {
   constructor() {
@@ -7,42 +7,49 @@ class ContactService {
 
   async createContact(data) {
     try {
-      const contact = await this.contactRepository.create(data);
+      const { name, email, subject, message } = data;
+
+      if (!name || !email || !subject || !message) {
+        throw new Error("Name, email, subject, and message are required.");
+      }
+
+      const contact = await this.contactRepository.create({
+        name,
+        email,
+        subject,
+        message,
+      });
+
       return contact;
     } catch (error) {
-      console.error("Something went wrong in the contact service: createContact");
+      console.error("Error in ContactService - createContact:", error);
       throw error;
     }
   }
 
-  /**
-   * Retrieve list of contacts matching optional search queries and filters
-   */
   async getContacts(options = {}) {
     try {
       const page = Math.max(1, parseInt(options.page) || 1);
       const limit = Math.max(1, parseInt(options.limit) || 10);
       const skip = (page - 1) * limit;
 
-      const filter = { isDeleted: false }; // Exclude soft-deleted items
+      const filter = {};
 
-      // 1. Filter by Status (e.g. "New", "Replied", "Closed")
-      if (options.status && options.status !== 'All') {
-        filter.status = options.status;
-      }
-
-      // 2. Search Keyword matches Name, Email, Phone, or Service
       if (options.search) {
-        const searchRegex = new RegExp(options.search.trim(), 'i');
+        const searchRegex = new RegExp(options.search.trim(), "i");
         filter.$or = [
-          { fullName: searchRegex },
+          { name: searchRegex },
           { email: searchRegex },
-          { phone: searchRegex },
-          { service: searchRegex }
+          { subject: searchRegex },
+          { message: searchRegex },
         ];
       }
 
-      const { data, total } = await this.contactRepository.getAllContacts(filter, skip, limit);
+      const { data, total } = await this.contactRepository.getAllContacts(
+        filter,
+        skip,
+        limit
+      );
       const totalPages = Math.ceil(total / limit);
 
       return {
@@ -50,36 +57,37 @@ class ContactService {
         total,
         totalPages,
         currentPage: page,
-        limit
+        limit,
       };
     } catch (error) {
-      console.error("Something went wrong in the contact service: getContacts");
+      console.error("Error in ContactService - getContacts:", error);
       throw error;
     }
   }
 
-  /**
-   * Update fields of a contact document (e.g. marking isRead or status)
-   */
+  async getContactById(id) {
+    try {
+      return await this.contactRepository.getById(id);
+    } catch (error) {
+      console.error("Error in ContactService - getContactById:", error);
+      throw error;
+    }
+  }
+
   async updateContact(id, updateData) {
     try {
-      const updatedContact = await this.contactRepository.update(id, updateData);
-      return updatedContact;
+      return await this.contactRepository.update(id, updateData);
     } catch (error) {
-      console.error("Something went wrong in the contact service: updateContact");
+      console.error("Error in ContactService - updateContact:", error);
       throw error;
     }
   }
 
-  /**
-   * Soft-delete a contact message by setting isDeleted=true
-   */
-  async softDeleteContact(id) {
+  async deleteContact(id) {
     try {
-      const deletedContact = await this.contactRepository.update(id, { isDeleted: true });
-      return deletedContact;
+      return await this.contactRepository.delete(id);
     } catch (error) {
-      console.error("Something went wrong in the contact service: softDeleteContact");
+      console.error("Error in ContactService - deleteContact:", error);
       throw error;
     }
   }

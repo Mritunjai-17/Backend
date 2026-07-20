@@ -3,9 +3,9 @@ const router = express.Router();
 const v1ApiRoutes = require('./v1');
 const adminRoutes = require('./adminRoutes');
 const portfolioRoutes = require('./portfolioRoutes');
+const subscriptionRoutes = require('./subscriptionRoutes');
 const authController = require('../controllers/authController');
 const contactController = require('../controllers/contact-controller');
-const subscriptionController = require('../controllers/subscription-controller');
 const uploadController = require('../controllers/upload-controller');
 const { validateContactInput, validateRegisterInput } = require('../middlewares/validationMiddleware');
 const { contactRateLimiter } = require('../middlewares/rateLimiter');
@@ -14,6 +14,7 @@ const { protect, approvedAdmin } = require('../middlewares/authMiddleware');
 router.use('/v1', v1ApiRoutes);
 router.use('/admin', adminRoutes);
 router.use('/portfolio', portfolioRoutes);
+router.use('/subscribe', subscriptionRoutes);
 
 // Upload portfolio image (endpoint: /api/upload/portfolio-image)
 router.post('/upload/portfolio-image', protect, approvedAdmin, uploadController.uploadPortfolio.single('image'), uploadController.uploadPortfolioImage);
@@ -28,11 +29,5 @@ router.post('/contact', contactRateLimiter, validateContactInput, contactControl
 router.get('/contact', protect, contactController.getAll);
 router.patch('/contact/:id', protect, contactController.update);
 router.delete('/contact/:id', protect, contactController.deleteContact);
-
-// Subscription routes (endpoint: /api/subscribe)
-router.post('/subscribe', subscriptionController.create);
-router.get('/subscribe', protect, subscriptionController.getAll);
-router.patch('/subscribe/:id', protect, subscriptionController.update);
-router.delete('/subscribe/:id', protect, subscriptionController.deleteSubscription);
 
 module.exports = router;

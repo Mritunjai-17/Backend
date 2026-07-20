@@ -13,13 +13,16 @@ const escapeHTML = (str) => {
 };
 
 const validateContactInput = (req, res, next) => {
-  const { fullName, email, phone, service, message } = req.body;
+  const { fullName, name, email, phone, service, subject, message } = req.body;
+
+  const actualName = fullName || name;
+  const actualService = service || subject || 'General Inquiry';
 
   // 1. Trim all inputs
-  const trimmedName = typeof fullName === 'string' ? fullName.trim() : '';
+  const trimmedName = typeof actualName === 'string' ? actualName.trim() : '';
   const trimmedEmail = typeof email === 'string' ? email.trim() : '';
   const trimmedPhone = typeof phone === 'string' ? phone.trim() : '';
-  const trimmedService = typeof service === 'string' ? service.trim() : '';
+  const trimmedService = typeof actualService === 'string' ? actualService.trim() : '';
   const trimmedMessage = typeof message === 'string' ? message.trim() : '';
 
   // 2. Validate required fields
@@ -46,31 +49,6 @@ const validateContactInput = (req, res, next) => {
     });
   }
 
-  if (!trimmedService) {
-    return res.status(400).json({
-      success: false,
-      error: 'Validation error: Service selection is required.'
-    });
-  }
-
-  const allowedServices = [
-    'Web Development',
-    'Graphic Designing',
-    'Digital Marketing',
-    'SEO Optimization',
-    'Social Media Management',
-    'Content Writing',
-    'Brand Identity',
-    'Other'
-  ];
-
-  if (!allowedServices.includes(trimmedService)) {
-    return res.status(400).json({
-      success: false,
-      error: 'Validation error: Invalid service selected.'
-    });
-  }
-
   if (!trimmedMessage) {
     return res.status(400).json({
       success: false,
@@ -80,9 +58,11 @@ const validateContactInput = (req, res, next) => {
 
   // 3. Sanitize inputs and Escape HTML to prevent XSS
   req.body.fullName = escapeHTML(trimmedName);
+  req.body.name = escapeHTML(trimmedName);
   req.body.email = trimmedEmail.toLowerCase();
   req.body.phone = escapeHTML(trimmedPhone);
   req.body.service = trimmedService;
+  req.body.subject = escapeHTML(typeof subject === 'string' ? subject.trim() : trimmedService);
   req.body.message = escapeHTML(trimmedMessage);
 
   next();
