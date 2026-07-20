@@ -442,7 +442,7 @@ export const apiService = {
       status
     });
 
-    const res = await fetch(`${baseUrl}/subscribe?${queryParams.toString()}`, {
+    const res = await fetch(`${baseUrl}/Subscribe?${queryParams.toString()}`, {
       method: 'GET',
       credentials: 'include'
     });
