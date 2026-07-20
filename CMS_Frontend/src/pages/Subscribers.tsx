@@ -61,7 +61,7 @@ export default function Subscribers() {
 
   const handleToggleRead = async (sub: Subscriber) => {
     try {
-      const updated = await apiService.updateSubscriberStatus(sub._id, { isRead: !sub.isRead });
+      await apiService.updateSubscriberStatus(sub._id, { isRead: !sub.isRead });
       setSubscribers(prev =>
         prev.map(item => (item._id === sub._id ? { ...item, isRead: !sub.isRead } : item))
       );
