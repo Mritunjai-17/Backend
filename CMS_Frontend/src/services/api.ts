@@ -339,20 +339,22 @@ export const apiService = {
     return result;
   },
 
-  uploadPortfolioImage: async (file: File, onProgress: (percent: number) => void): Promise<{ success: boolean; url?: string; error?: string }> => {
+  uploadPortfolioFile: async (file: File, onProgress?: (percent: number) => void): Promise<{ success: boolean; url?: string; data?: any; error?: string }> => {
     return new Promise((resolve, reject) => {
       const baseUrl = API_BASE_URL.replace('/v1', '');
       const xhr = new XMLHttpRequest();
       
-      xhr.open('POST', `${baseUrl}/upload/portfolio-image`);
+      xhr.open('PUT', `${baseUrl}/portfolio/image`);
       xhr.withCredentials = true;
       
-      xhr.upload.onprogress = (event) => {
-        if (event.lengthComputable) {
-          const percentComplete = Math.round((event.loaded / event.total) * 100);
-          onProgress(percentComplete);
-        }
-      };
+      if (onProgress) {
+        xhr.upload.onprogress = (event) => {
+          if (event.lengthComputable) {
+            const percentComplete = Math.round((event.loaded / event.total) * 100);
+            onProgress(percentComplete);
+          }
+        };
+      }
 
       xhr.onload = () => {
         let response: any = {};
@@ -362,20 +364,28 @@ export const apiService = {
           response = {};
         }
         if (xhr.status >= 200 && xhr.status < 300) {
-          resolve(response);
+          resolve({
+            success: true,
+            url: response.data?.imageUrl || response.url || response.data?.image,
+            data: response.data
+          });
         } else {
           reject(new Error(response.error || 'Upload failed'));
         }
       };
 
       xhr.onerror = () => {
-        reject(new Error('Network error during upload'));
+        reject(new Error('Network error during file upload'));
       };
 
       const formData = new FormData();
       formData.append('image', file);
       xhr.send(formData);
     });
+  },
+
+  uploadPortfolioImage: async (file: File, onProgress?: (percent: number) => void): Promise<{ success: boolean; url?: string; data?: any; error?: string }> => {
+    return apiService.uploadPortfolioFile(file, onProgress);
   },
 
   deletePortfolioImage: async (): Promise<any> => {

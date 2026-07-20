@@ -1,6 +1,8 @@
 const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
+const PortfolioService = require('../services/portfolio-service');
+const portfolioService = new PortfolioService();
 
 // Ensure uploads directories exist
 const uploadDir = path.join(__dirname, '../../uploads/blog');
@@ -31,7 +33,7 @@ const portfolioStorage = multer.diskStorage({
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    const ext = path.extname(file.originalname);
+    const ext = path.extname(file.originalname).toLowerCase();
     cb(null, uniqueSuffix + ext);
   }
 });
@@ -55,8 +57,11 @@ const upload = multer({
 });
 
 const portfolioFileFilter = (req, file, cb) => {
-  const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
-  if (allowedMimeTypes.includes(file.mimetype)) {
+  const allowedMimeTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'application/pdf'];
+  const ext = path.extname(file.originalname).toLowerCase();
+  const allowedExts = ['.jpg', '.jpeg', '.png', '.webp', '.pdf'];
+
+  if (allowedMimeTypes.includes(file.mimetype) || allowedExts.includes(ext)) {
     cb(null, true);
   } else {
     cb(new Error('Invalid file type. Only JPEG, PNG, WEBP images, and PDF documents are allowed.'), false);
@@ -94,11 +99,9 @@ const uploadImage = (req, res) => {
 };
 
 /**
- * Handle portfolio image upload & replace old file
+ * Handle portfolio file upload & replace old file via PortfolioService
  * @route POST /api/upload/portfolio-image
  */
-const Portfolio = require('../models/Portfolio');
-
 const uploadPortfolioImage = async (req, res) => {
   if (!req.file) {
     return res.status(400).json({
@@ -108,29 +111,15 @@ const uploadPortfolioImage = async (req, res) => {
     });
   }
 
-  const imageUrl = `/uploads/portfolio/${req.file.filename}`;
+  const fileUrl = `/uploads/portfolio/${req.file.filename}`;
 
   try {
-    // Find existing portfolio entry to delete the old image file if possible
-    const existing = await Portfolio.findOne();
-    if (existing && existing.imageUrl) {
-      if (existing.imageUrl.startsWith('/uploads/portfolio/')) {
-        const oldFilePath = path.join(__dirname, '../..', existing.imageUrl);
-        if (fs.existsSync(oldFilePath)) {
-          try {
-            fs.unlinkSync(oldFilePath);
-            console.log(`Deleted old portfolio image file: ${oldFilePath}`);
-          } catch (err) {
-            console.error(`Error deleting old file: ${err.message}`);
-          }
-        }
-      }
-    }
-
+    const data = await portfolioService.updatePortfolio(fileUrl);
     return res.status(200).json({
       success: true,
-      message: 'Portfolio image uploaded successfully',
-      url: imageUrl
+      message: 'Portfolio file uploaded successfully',
+      url: fileUrl,
+      data
     });
   } catch (err) {
     console.error('Error in uploadPortfolioImage:', err);

@@ -3,34 +3,48 @@ import { apiService } from '../services/api';
 import { 
   Upload, 
   Image as ImageIcon, 
+  FileText,
+  Trash2,
+  RefreshCw,
   AlertTriangle, 
   CheckCircle2, 
-  Loader2
+  Loader2,
+  X,
+  ExternalLink
 } from 'lucide-react';
 
 export default function Portfolios() {
-  const [imageUrl, setImageUrl] = useState('');
-  const [previewUrl, setPreviewUrl] = useState('');
+  // Server state
+  const [currentFileUrl, setCurrentFileUrl] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Local selection state (before submit/upload)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [localPreviewUrl, setLocalPreviewUrl] = useState<string>('');
+
+  // Uploading state
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+
+  // Alert messaging state
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  const [previewIsPdf, setPreviewIsPdf] = useState(false);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Fetch the current portfolio image on mount
+  // Fetch current live portfolio item on component mount
   const fetchPortfolio = async () => {
     setLoading(true);
     setError('');
     try {
       const res = await apiService.getPortfolio();
       if (res.success && res.data) {
-        setImageUrl(res.data.imageUrl);
+        const path = res.data.imageUrl || res.data.image || '';
+        setCurrentFileUrl(path);
       }
     } catch (err: any) {
-      setError(err.message || 'Failed to fetch the portfolio image.');
+      setError(err.message || 'Failed to fetch current portfolio file.');
     } finally {
       setLoading(false);
     }
@@ -40,78 +54,100 @@ export default function Portfolios() {
     fetchPortfolio();
   }, []);
 
-  const getFullImageUrl = (path: string) => {
+  // Format absolute backend URL for public serving
+  const getFullFileUrl = (path: string) => {
     if (!path) return '';
     if (path.startsWith('http://') || path.startsWith('https://')) return path;
-    
     const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
-    const backendOrigin = apiBase.replace('/v1', '');
-    return `${backendOrigin}${path}`;
+    const backendOrigin = apiBase.replace(/\/api\/v1\/?$/, '').replace(/\/api\/?$/, '');
+    return `${backendOrigin}${path.startsWith('/') ? '' : '/'}${path}`;
   };
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Helper to check if file is PDF
+  const isPdf = (urlOrName: string, mimeType?: string) => {
+    if (mimeType === 'application/pdf') return true;
+    return urlOrName.toLowerCase().endsWith('.pdf');
+  };
+
+  // Handle local file selection
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // 1. Validate file type
+    // Validate file type (JPG, PNG, WEBP, PDF)
     const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg', 'application/pdf'];
-    if (!allowedTypes.includes(file.type)) {
-      setError('Invalid file type. Only JPG, PNG, WEBP images, and PDF files are allowed.');
+    const ext = file.name.split('.').pop()?.toLowerCase();
+    const isAllowedExt = ['jpg', 'jpeg', 'png', 'webp', 'pdf'].includes(ext || '');
+
+    if (!allowedTypes.includes(file.type) && !isAllowedExt) {
+      setError('Invalid file type. Only JPG, PNG, WEBP images, and PDF documents are allowed.');
       return;
     }
 
-    // 2. Validate file size (10MB)
+    // Validate file size (10MB limit)
     const maxSize = 10 * 1024 * 1024;
     if (file.size > maxSize) {
-      setError('File size too large. Maximum size allowed is 10MB.');
+      setError('File size exceeds 10MB limit. Please select a smaller file.');
       return;
     }
 
     setError('');
     setSuccess('');
-    
-    // Set PDF preview state flag
-    setPreviewIsPdf(file.type === 'application/pdf');
+    setSelectedFile(file);
 
-    // Create local object URL for preview
+    // Revoke previous local object URL if existing
+    if (localPreviewUrl) {
+      URL.revokeObjectURL(localPreviewUrl);
+    }
+
+    // Create new object URL for preview
     const objectUrl = URL.createObjectURL(file);
-    setPreviewUrl(objectUrl);
+    setLocalPreviewUrl(objectUrl);
+  };
 
-    // 3. Upload immediately
-    setUploading(true);
-    setUploadProgress(0);
-
-    try {
-      // Upload file to server and track progress
-      const uploadRes = await apiService.uploadPortfolioImage(file, (progress) => {
-        setUploadProgress(progress);
-      });
-
-      if (uploadRes.success && uploadRes.url) {
-        // Save the updated image URL to Portfolio model
-        const saveRes = await apiService.updatePortfolioImage(uploadRes.url);
-        if (saveRes.success) {
-          setImageUrl(uploadRes.url);
-          setSuccess('Portfolio image updated successfully!');
-          setPreviewUrl('');
-          setPreviewIsPdf(false);
-          setTimeout(() => setSuccess(''), 4000);
-        } else {
-          setError(saveRes.error || 'Failed to save portfolio image URL.');
-        }
-      } else {
-        setError(uploadRes.error || 'Failed to upload portfolio image.');
-      }
-    } catch (err: any) {
-      setError(err.message || 'Error occurred during image upload.');
-    } finally {
-      setUploading(false);
-      setUploadProgress(0);
-      // Clean up object URL
-      URL.revokeObjectURL(objectUrl);
+  // Remove locally selected file prior to submitting
+  const handleRemoveSelectedFile = () => {
+    if (localPreviewUrl) {
+      URL.revokeObjectURL(localPreviewUrl);
+    }
+    setSelectedFile(null);
+    setLocalPreviewUrl('');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
 
+  // Submit and upload selected file
+  const handleUploadFile = async () => {
+    if (!selectedFile) return;
+
+    setUploading(true);
+    setUploadProgress(0);
+    setError('');
+    setSuccess('');
+
+    try {
+      const res = await apiService.uploadPortfolioFile(selectedFile, (progress) => {
+        setUploadProgress(progress);
+      });
+
+      if (res.success && res.url) {
+        setCurrentFileUrl(res.url);
+        setSuccess('Portfolio file updated and stored successfully!');
+        handleRemoveSelectedFile();
+        setTimeout(() => setSuccess(''), 5000);
+      } else {
+        setError(res.error || 'Failed to upload portfolio file.');
+      }
+    } catch (err: any) {
+      setError(err.message || 'An error occurred while uploading the file.');
+    } finally {
+      setUploading(false);
+      setUploadProgress(0);
+    }
+  };
+
+  // Delete portfolio file on server
   const handleDeleteConfirm = async () => {
     setIsDeleteOpen(false);
     setLoading(true);
@@ -121,15 +157,14 @@ export default function Portfolios() {
     try {
       const res = await apiService.deletePortfolioImage();
       if (res.success) {
-        setImageUrl('/MIDIS/71c06f41f9f6c6715b4de3690ed53236 copy.webp');
-        setPreviewIsPdf(false);
-        setSuccess(res.message || 'Portfolio image deleted successfully.');
-        setTimeout(() => setSuccess(''), 4000);
+        setCurrentFileUrl('/MIDIS/71c06f41f9f6c6715b4de3690ed53236 copy.webp');
+        setSuccess(res.message || 'Portfolio file deleted successfully. Reverted to default placeholder.');
+        setTimeout(() => setSuccess(''), 5000);
       } else {
-        setError(res.error || 'Failed to delete portfolio image.');
+        setError(res.error || 'Failed to delete portfolio file.');
       }
     } catch (err: any) {
-      setError(err.message || 'Failed to delete portfolio image.');
+      setError(err.message || 'Failed to delete portfolio file.');
     } finally {
       setLoading(false);
     }
@@ -144,8 +179,8 @@ export default function Portfolios() {
       {/* Header */}
       <div style={styles.header}>
         <div>
-          <h1 style={styles.title}>Manage Portfolio</h1>
-          <p style={styles.subtitle}>Upload and replace the single collage portfolio image for the public website</p>
+          <h1 style={styles.title}>Portfolio Management</h1>
+          <p style={styles.subtitle}>Upload, replace, and delete portfolio images (JPG, PNG, WEBP) or PDF documents for the MIDIS website</p>
         </div>
       </div>
 
@@ -163,13 +198,15 @@ export default function Portfolios() {
         </div>
       )}
 
-      {/* Main content grid */}
+      {/* Main Content Grid */}
       <div style={styles.grid}>
-        {/* Left Side: Upload controls */}
+        {/* Left Side: Upload & Control Panel */}
         <div className="glass-card" style={styles.controlCard}>
-          <h3 style={styles.cardTitle}>Change Portfolio File</h3>
+          <h3 style={styles.cardTitle}>
+            {currentFileUrl && currentFileUrl.startsWith('/uploads/portfolio/') ? 'Replace Portfolio File' : 'Upload Portfolio File'}
+          </h3>
           <p style={styles.cardDescription}>
-            The portfolio is displayed as a single high-quality designed image or PDF on the public website. Replacing this file will automatically update the website.
+            Select an image or PDF document from your local device. Replacing or deleting an existing file will clean it up on the server automatically.
           </p>
 
           <input 
@@ -180,36 +217,84 @@ export default function Portfolios() {
             style={{ display: 'none' }}
           />
 
-          <button 
-            type="button" 
-            className="btn btn-primary" 
-            onClick={triggerFileInput}
-            disabled={loading || uploading}
-            style={styles.uploadBtn}
-          >
-            {uploading ? (
-              <>
-                <Loader2 size={16} className="spinner-loader" style={{ marginRight: '0.5rem' }} />
-                Uploading ({uploadProgress}%)
-              </>
-            ) : (
-              <>
-                <Upload size={16} style={{ marginRight: '0.5rem' }} />
-                Upload New Portfolio Image
-              </>
-            )}
-          </button>
+          {/* Staged File Selection Preview Card */}
+          {selectedFile ? (
+            <div style={styles.stagedCard}>
+              <div style={styles.stagedHeader}>
+                <span style={styles.stagedTitle}>Selected File Ready for Upload</span>
+                <button 
+                  type="button" 
+                  onClick={handleRemoveSelectedFile}
+                  disabled={uploading}
+                  style={styles.closeBtn}
+                  title="Remove selected file"
+                >
+                  <X size={16} />
+                </button>
+              </div>
 
-          {imageUrl && imageUrl.startsWith('/uploads/portfolio/') && (
-            <button 
-              type="button" 
-              className="btn btn-danger" 
-              onClick={() => setIsDeleteOpen(true)}
-              disabled={loading || uploading}
-              style={{ ...styles.uploadBtn, marginTop: '0.75rem', backgroundColor: '#dc2626', borderColor: '#dc2626' }}
+              {/* Local File Preview */}
+              <div style={styles.stagedPreviewContainer}>
+                {isPdf(selectedFile.name, selectedFile.type) ? (
+                  <div style={styles.pdfCard}>
+                    <FileText size={48} style={{ color: '#ef4444' }} />
+                    <div style={styles.pdfDetails}>
+                      <span style={styles.pdfName}>{selectedFile.name}</span>
+                      <span style={styles.pdfSize}>{(selectedFile.size / (1024 * 1024)).toFixed(2)} MB • PDF Document</span>
+                    </div>
+                  </div>
+                ) : (
+                  <div style={styles.localImageWrapper}>
+                    <img src={localPreviewUrl} alt="Local Preview" style={styles.localImage} />
+                  </div>
+                )}
+              </div>
+
+              {/* Action Buttons for Selected File */}
+              <div style={styles.stagedActions}>
+                <button 
+                  type="button" 
+                  className="btn btn-primary" 
+                  onClick={handleUploadFile}
+                  disabled={uploading}
+                  style={{ flex: 1 }}
+                >
+                  {uploading ? (
+                    <>
+                      <Loader2 size={16} className="spinner-loader" style={{ marginRight: '0.5rem' }} />
+                      Uploading ({uploadProgress}%)
+                    </>
+                  ) : (
+                    <>
+                      <Upload size={16} style={{ marginRight: '0.5rem' }} />
+                      Confirm & Upload
+                    </>
+                  )}
+                </button>
+                <button 
+                  type="button" 
+                  className="btn btn-secondary" 
+                  onClick={triggerFileInput}
+                  disabled={uploading}
+                >
+                  Change
+                </button>
+              </div>
+            </div>
+          ) : (
+            /* File Picker Trigger Area */
+            <div 
+              style={styles.dropZone}
+              onClick={triggerFileInput}
             >
-              Delete Portfolio Image
-            </button>
+              <Upload size={36} style={{ color: 'var(--primary)', marginBottom: '0.75rem' }} />
+              <p style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.25rem' }}>
+                Click to browse local file
+              </p>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                Supports JPG, PNG, WEBP images or PDF files (Max 10MB)
+              </p>
+            </div>
           )}
 
           {uploading && (
@@ -221,56 +306,78 @@ export default function Portfolios() {
             </div>
           )}
 
+          {/* Delete Option if custom file is uploaded */}
+          {currentFileUrl && currentFileUrl.startsWith('/uploads/portfolio/') && !selectedFile && (
+            <button 
+              type="button" 
+              className="btn btn-danger" 
+              onClick={() => setIsDeleteOpen(true)}
+              disabled={loading || uploading}
+              style={{ ...styles.actionBtn, backgroundColor: '#dc2626', borderColor: '#dc2626', marginTop: '1rem' }}
+            >
+              <Trash2 size={16} style={{ marginRight: '0.5rem' }} />
+              Delete Current Portfolio File
+            </button>
+          )}
+
           <div style={styles.requirementsList}>
-            <h4 style={styles.reqTitle}>File Requirements:</h4>
-            <ul>
-              <li>Accepted formats: JPG, PNG, WEBP, PDF</li>
-              <li>Maximum file size: 10MB</li>
-              <li>Recommended ratio: 16:9 landscape</li>
+            <h4 style={styles.reqTitle}>Requirements & Specs:</h4>
+            <ul style={styles.reqUl}>
+              <li>Supported extensions: .jpg, .jpeg, .png, .webp, .pdf</li>
+              <li>Maximum file size limit: 10MB</li>
+              <li>Stored directory: <code>uploads/portfolio/</code></li>
             </ul>
           </div>
         </div>
 
-        {/* Right Side: Image preview */}
+        {/* Right Side: Current Live Portfolio View */}
         <div className="glass-card" style={styles.previewCard}>
-          <h3 style={styles.cardTitle}>Portfolio Preview</h3>
+          <div style={styles.cardHeaderFlex}>
+            <h3 style={styles.cardTitle}>Live Portfolio Display</h3>
+            <button 
+              type="button" 
+              onClick={fetchPortfolio} 
+              disabled={loading}
+              style={styles.refreshBtn}
+              title="Refresh status"
+            >
+              <RefreshCw size={14} className={loading ? "spinner-loader" : ""} />
+            </button>
+          </div>
           
           {loading ? (
             <div style={styles.loaderContainer}>
               <Loader2 size={32} className="spinner-loader" style={{ color: 'var(--primary)' }} />
-              <span style={{ marginTop: '0.5rem', color: 'var(--text-secondary)' }}>Loading portfolio image...</span>
+              <span style={{ marginTop: '0.5rem', color: 'var(--text-secondary)' }}>Loading live portfolio...</span>
             </div>
           ) : (
             <div style={styles.imageContainer}>
-              {previewUrl ? (
+              {currentFileUrl ? (
                 <div style={styles.imageWrapper}>
-                  {previewIsPdf ? (
-                    <iframe 
-                      src={previewUrl} 
-                      title="New PDF Preview" 
-                      style={{ width: '100%', height: '100%', border: 'none' }} 
-                    />
+                  {isPdf(currentFileUrl) ? (
+                    <div style={styles.pdfPreviewBox}>
+                      <FileText size={64} style={{ color: '#ef4444', marginBottom: '1rem' }} />
+                      <h4 style={{ color: 'var(--text-primary)', fontWeight: 700, marginBottom: '0.5rem' }}>
+                        PDF Document Uploaded
+                      </h4>
+                      <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1.25rem', textAlign: 'center' }}>
+                        {currentFileUrl.split('/').pop()}
+                      </p>
+                      <a 
+                        href={getFullFileUrl(currentFileUrl)} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="btn btn-secondary"
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem' }}
+                      >
+                        <ExternalLink size={14} />
+                        View / Download PDF
+                      </a>
+                    </div>
                   ) : (
                     <img 
-                      src={previewUrl} 
-                      alt="New Portfolio Preview" 
-                      style={styles.previewImage} 
-                    />
-                  )}
-                  <div style={styles.previewLabel}>New File Preview</div>
-                </div>
-              ) : imageUrl ? (
-                <div style={styles.imageWrapper}>
-                  {imageUrl.toLowerCase().endsWith('.pdf') ? (
-                    <iframe 
-                      src={getFullImageUrl(imageUrl)} 
-                      title="Current Live PDF" 
-                      style={{ width: '100%', height: '100%', border: 'none' }} 
-                    />
-                  ) : (
-                    <img 
-                      src={getFullImageUrl(imageUrl)} 
-                      alt="Current Portfolio" 
+                      src={getFullFileUrl(currentFileUrl)} 
+                      alt="Current Live Portfolio" 
                       style={styles.previewImage} 
                     />
                   )}
@@ -279,16 +386,16 @@ export default function Portfolios() {
               ) : (
                 <div style={styles.placeholderContainer}>
                   <ImageIcon size={48} style={{ color: 'var(--text-muted)' }} />
-                  <p style={{ marginTop: '0.75rem', color: 'var(--text-muted)' }}>No portfolio file uploaded yet</p>
+                  <p style={{ marginTop: '0.75rem', color: 'var(--text-muted)' }}>No custom portfolio uploaded</p>
                 </div>
               )}
             </div>
           )}
 
-          {imageUrl && !loading && (
+          {currentFileUrl && !loading && (
             <div style={styles.infoRow}>
-              <span style={styles.infoLabel}>Stored File Path:</span>
-              <code style={styles.infoValue}>{imageUrl}</code>
+              <span style={styles.infoLabel}>MongoDB Stored Relative Path:</span>
+              <code style={styles.infoValue}>{currentFileUrl}</code>
             </div>
           )}
         </div>
@@ -302,10 +409,10 @@ export default function Portfolios() {
               <AlertTriangle size={32} style={{ color: '#ef4444' }} />
             </div>
             
-            <h3 style={styles.confirmTitle}>Delete Portfolio Image?</h3>
+            <h3 style={styles.confirmTitle}>Delete Portfolio File?</h3>
             <p style={styles.confirmText}>
-              Are you sure you want to delete the custom uploaded portfolio image? 
-              This will revert the website to show the default placeholder collage.
+              Are you sure you want to delete this portfolio file from disk and database?
+              The public website will revert to displaying the default collage fallback.
             </p>
 
             <div style={styles.confirmButtons}>
@@ -345,7 +452,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   title: {
     fontFamily: "'Plus Jakarta Sans', sans-serif",
-    fontSize: '2.5rem',
+    fontSize: '2.25rem',
     fontWeight: 800,
     color: 'var(--text-primary)',
     letterSpacing: '-0.025em',
@@ -359,7 +466,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   grid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
     gap: '2.5rem',
     alignItems: 'start',
   },
@@ -375,18 +482,111 @@ const styles: Record<string, React.CSSProperties> = {
     color: 'var(--text-primary)',
   },
   cardDescription: {
-    fontSize: '0.9rem',
+    fontSize: '0.875rem',
     color: 'var(--text-secondary)',
     lineHeight: 1.5,
   },
-  uploadBtn: {
+  dropZone: {
+    border: '2px dashed var(--border-color)',
+    borderRadius: 'var(--border-radius-md)',
+    padding: '2.5rem 1.5rem',
+    textAlign: 'center',
+    cursor: 'pointer',
+    backgroundColor: 'var(--bg-secondary)',
+    transition: 'border-color 0.2s ease, background-color 0.2s ease',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stagedCard: {
+    border: '1px solid var(--primary)',
+    borderRadius: 'var(--border-radius-md)',
+    padding: '1.25rem',
+    backgroundColor: 'var(--bg-secondary)',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '1rem',
+  },
+  stagedHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  stagedTitle: {
+    fontSize: '0.85rem',
+    fontWeight: 700,
+    color: 'var(--primary)',
+    textTransform: 'uppercase',
+    letterSpacing: '0.04em',
+  },
+  closeBtn: {
+    background: 'none',
+    border: 'none',
+    color: 'var(--text-muted)',
+    cursor: 'pointer',
+    padding: '0.25rem',
+    borderRadius: '4px',
+  },
+  stagedPreviewContainer: {
+    width: '100%',
+    maxHeight: '220px',
+    borderRadius: '8px',
+    overflow: 'hidden',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  localImageWrapper: {
+    width: '100%',
+    maxHeight: '220px',
+    overflow: 'hidden',
+    borderRadius: '6px',
+  },
+  localImage: {
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
+  },
+  pdfCard: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '1rem',
+    padding: '1.5rem',
+    backgroundColor: 'var(--bg-primary)',
+    borderRadius: '8px',
+    border: '1px solid var(--border-color)',
+    width: '100%',
+  },
+  pdfDetails: {
+    display: 'flex',
+    flexDirection: 'column',
+    overflow: 'hidden',
+  },
+  pdfName: {
+    fontSize: '0.9rem',
+    fontWeight: 600,
+    color: 'var(--text-primary)',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+  pdfSize: {
+    fontSize: '0.75rem',
+    color: 'var(--text-muted)',
+    marginTop: '0.25rem',
+  },
+  stagedActions: {
+    display: 'flex',
+    gap: '0.75rem',
+  },
+  actionBtn: {
     width: '100%',
     padding: '0.75rem',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     fontSize: '0.95rem',
-    marginTop: '0.5rem',
   },
   progressContainer: {
     marginTop: '0.5rem',
@@ -411,7 +611,7 @@ const styles: Record<string, React.CSSProperties> = {
     textAlign: 'right',
   },
   requirementsList: {
-    marginTop: '1.5rem',
+    marginTop: '1rem',
     padding: '1rem',
     backgroundColor: 'var(--bg-secondary)',
     borderRadius: 'var(--border-radius-md)',
@@ -425,11 +625,34 @@ const styles: Record<string, React.CSSProperties> = {
     marginBottom: '0.5rem',
     letterSpacing: '0.05em',
   },
+  reqUl: {
+    fontSize: '0.8rem',
+    color: 'var(--text-secondary)',
+    paddingLeft: '1.25rem',
+    margin: 0,
+    lineHeight: 1.6,
+  },
   previewCard: {
     padding: '2rem',
     display: 'flex',
     flexDirection: 'column',
     gap: '1rem',
+  },
+  cardHeaderFlex: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  refreshBtn: {
+    background: 'none',
+    border: '1px solid var(--border-color)',
+    borderRadius: '6px',
+    padding: '0.4rem',
+    color: 'var(--text-secondary)',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   imageContainer: {
     width: '100%',
@@ -466,24 +689,23 @@ const styles: Record<string, React.CSSProperties> = {
     height: '100%',
     objectFit: 'cover',
   },
-  previewLabel: {
-    position: 'absolute',
-    bottom: '0.75rem',
-    left: '0.75rem',
-    backgroundColor: 'var(--primary)',
-    color: 'white',
-    padding: '0.25rem 0.5rem',
-    borderRadius: '4px',
-    fontSize: '0.7rem',
-    fontWeight: 700,
+  pdfPreviewBox: {
+    width: '100%',
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '1.5rem',
+    backgroundColor: 'var(--bg-secondary)',
   },
   currentLabel: {
     position: 'absolute',
     bottom: '0.75rem',
     left: '0.75rem',
-    backgroundColor: 'rgba(15, 23, 42, 0.75)',
+    backgroundColor: 'rgba(15, 23, 42, 0.85)',
     color: 'white',
-    padding: '0.25rem 0.5rem',
+    padding: '0.25rem 0.6rem',
     borderRadius: '4px',
     fontSize: '0.7rem',
     fontWeight: 700,
@@ -544,13 +766,13 @@ const styles: Record<string, React.CSSProperties> = {
     justifyContent: 'center',
   },
   confirmTitle: {
-    fontSize: '1.5rem',
+    fontSize: '1.35rem',
     fontWeight: 700,
     color: 'var(--text-primary)',
   },
   confirmText: {
     color: 'var(--text-secondary)',
-    fontSize: '0.95rem',
+    fontSize: '0.9rem',
     lineHeight: 1.6,
   },
   confirmButtons: {

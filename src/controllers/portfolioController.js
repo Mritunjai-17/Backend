@@ -1,25 +1,14 @@
-const fs = require('fs');
-const path = require('path');
-const Portfolio = require('../models/Portfolio');
+const PortfolioService = require('../services/portfolio-service');
+const portfolioService = new PortfolioService();
 
 /**
- * @desc    Get the current single portfolio image
+ * @desc    Get current portfolio document or default fallback
  * @route   GET /api/portfolio
  * @access  Public
  */
 exports.getPortfolio = async (req, res) => {
   try {
-    const portfolio = await Portfolio.findOne();
-    if (!portfolio) {
-      // Fallback default image URL matching the original hardcoded one
-      return res.status(200).json({
-        success: true,
-        data: {
-          imageUrl: '/MIDIS/71c06f41f9f6c6715b4de3690ed53236 copy.webp',
-          updatedAt: new Date()
-        }
-      });
-    }
+    const portfolio = await portfolioService.getPortfolio();
     res.status(200).json({
       success: true,
       data: portfolio
@@ -28,83 +17,66 @@ exports.getPortfolio = async (req, res) => {
     console.error('Error in portfolioController: getPortfolio', err);
     res.status(500).json({
       success: false,
-      error: 'Failed to fetch portfolio image.'
+      error: 'Failed to fetch portfolio data.'
     });
   }
 };
 
 /**
- * @desc    Update the portfolio image URL
- * @route   PUT /api/portfolio/image
+ * @desc    Update or upload portfolio file/image
+ * @route   PUT /api/portfolio/image or POST /api/portfolio
  * @access  Private (Approved Admin only)
  */
 exports.updatePortfolioImage = async (req, res) => {
-  const { imageUrl } = req.body;
-
-  if (!imageUrl) {
-    return res.status(400).json({
-      success: false,
-      error: 'Image URL is required.'
-    });
-  }
-
   try {
-    let portfolio = await Portfolio.findOne();
-    if (portfolio) {
-      portfolio.imageUrl = imageUrl;
-      await portfolio.save();
-    } else {
-      portfolio = await Portfolio.create({ imageUrl });
+    let filePath = req.body.imageUrl || req.body.image;
+    
+    if (req.file) {
+      filePath = `/uploads/portfolio/${req.file.filename}`;
     }
+
+    if (!filePath) {
+      return res.status(400).json({
+        success: false,
+        error: 'File or imageUrl is required.'
+      });
+    }
+
+    const portfolio = await portfolioService.updatePortfolio(filePath);
 
     res.status(200).json({
       success: true,
-      message: 'Portfolio image URL updated successfully.',
+      message: 'Portfolio updated successfully.',
       data: portfolio
     });
   } catch (err) {
     console.error('Error in portfolioController: updatePortfolioImage', err);
     res.status(500).json({
       success: false,
-      error: 'Failed to update portfolio image.'
+      error: err.message || 'Failed to update portfolio image.'
     });
   }
 };
 
 /**
- * @desc    Delete the portfolio image (reverts to default)
+ * @desc    Delete the portfolio image/document (reverts to default)
  * @route   DELETE /api/portfolio/image
  * @access  Private (Approved Admin only)
  */
 exports.deletePortfolioImage = async (req, res) => {
   try {
-    const portfolio = await Portfolio.findOne();
-    if (!portfolio) {
-      return res.status(444).json({
+    const result = await portfolioService.deletePortfolio();
+
+    if (!result) {
+      return res.status(404).json({
         success: false,
-        error: 'Portfolio image registration not found.'
+        error: 'Portfolio item not found.'
       });
     }
 
-    // Delete the file from local disk if it was uploaded locally
-    if (portfolio.imageUrl && portfolio.imageUrl.startsWith('/uploads/portfolio/')) {
-      const filePath = path.join(__dirname, '../..', portfolio.imageUrl);
-      if (fs.existsSync(filePath)) {
-        try {
-          fs.unlinkSync(filePath);
-          console.log(`Deleted portfolio image file: ${filePath}`);
-        } catch (unlinkErr) {
-          console.error(`Error unlinking portfolio image file: ${unlinkErr.message}`);
-        }
-      }
-    }
-
-    // Remove the document so GET requests fall back to the default hardcoded placeholder
-    await Portfolio.deleteOne({ _id: portfolio._id });
-
     res.status(200).json({
       success: true,
-      message: 'Portfolio image deleted successfully. Reverted to default placeholder.'
+      message: 'Portfolio deleted successfully. Reverted to default placeholder.'
     });
   } catch (err) {
     console.error('Error in portfolioController: deletePortfolioImage', err);
