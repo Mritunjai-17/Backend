@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { apiService, PortfolioItem } from '../services/api';
+import { apiService, type PortfolioItem } from '../services/api';
 import { 
   Upload, 
   Image as ImageIcon, 
