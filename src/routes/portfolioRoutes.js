@@ -23,16 +23,18 @@ const handleUpload = (req, res, next) => {
   });
 };
 
-// Public route to fetch current portfolio
+// Public route to fetch all portfolio gallery items
 router.get('/', portfolioController.getPortfolio);
 
-// Protected routes to update or upload portfolio file (image or PDF)
-router.put('/image', protect, approvedAdmin, handleUpload, portfolioController.updatePortfolioImage);
-router.post('/upload', protect, approvedAdmin, handleUpload, portfolioController.updatePortfolioImage);
-router.put('/', protect, approvedAdmin, handleUpload, portfolioController.updatePortfolioImage);
+// Protected routes to add a new portfolio image entry
+router.post('/upload', protect, approvedAdmin, handleUpload, portfolioController.createPortfolioImage);
+router.post('/image', protect, approvedAdmin, handleUpload, portfolioController.createPortfolioImage);
+router.put('/image', protect, approvedAdmin, handleUpload, portfolioController.createPortfolioImage);
+router.post('/', protect, approvedAdmin, handleUpload, portfolioController.createPortfolioImage);
 
-// Protected route to delete portfolio item
-router.delete('/image', protect, approvedAdmin, portfolioController.deletePortfolioImage);
+// Protected routes to delete a specific portfolio image item by ID
+router.delete('/image/:id', protect, approvedAdmin, portfolioController.deletePortfolioImage);
+router.delete('/:id', protect, approvedAdmin, portfolioController.deletePortfolioImage);
 router.delete('/', protect, approvedAdmin, portfolioController.deletePortfolioImage);
 
 module.exports = router;

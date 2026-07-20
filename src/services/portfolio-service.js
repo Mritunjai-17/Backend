@@ -8,7 +8,7 @@ class PortfolioService {
   }
 
   /**
-   * Remove a local uploaded file from disk if it exists in uploads/portfolio/
+   * Unlink a specific file from disk if it exists under uploads/portfolio/
    */
   async deleteLocalFile(relativePath) {
     if (relativePath && relativePath.startsWith('/uploads/portfolio/')) {
@@ -16,87 +16,61 @@ class PortfolioService {
       if (fs.existsSync(absolutePath)) {
         try {
           fs.unlinkSync(absolutePath);
-          console.log(`Successfully deleted old portfolio file: ${absolutePath}`);
+          console.log(`Successfully deleted portfolio image file: ${absolutePath}`);
         } catch (unlinkErr) {
-          console.error(`Failed to delete portfolio file (${absolutePath}): ${unlinkErr.message}`);
+          console.error(`Failed to delete portfolio image file (${absolutePath}): ${unlinkErr.message}`);
         }
       }
     }
   }
 
   /**
-   * Determine file type ('image' or 'pdf') based on file extension
+   * Get all portfolio items
    */
-  getFileType(filePath) {
-    if (!filePath) return 'image';
-    return filePath.toLowerCase().endsWith('.pdf') ? 'pdf' : 'image';
-  }
-
-  /**
-   * Get the current portfolio document or default fallback
-   */
-  async getPortfolio() {
+  async getAllPortfolios() {
     try {
-      const portfolio = await this.portfolioRepository.getPortfolio();
-      if (!portfolio) {
-        return {
-          imageUrl: '/MIDIS/71c06f41f9f6c6715b4de3690ed53236 copy.webp',
-          image: '/MIDIS/71c06f41f9f6c6715b4de3690ed53236 copy.webp',
-          fileType: 'image',
-          updatedAt: new Date()
-        };
-      }
-      return portfolio;
+      const portfolios = await this.portfolioRepository.getAll();
+      return portfolios;
     } catch (error) {
-      console.error("Something went wrong in PortfolioService: getPortfolio", error);
+      console.error("Something went wrong in PortfolioService: getAllPortfolios", error);
       throw error;
     }
   }
 
   /**
-   * Update portfolio with new file path or image URL, deleting the old file automatically
+   * Add a new portfolio image item
    */
-  async updatePortfolio(imageUrl) {
+  async createPortfolio(imageUrl) {
     try {
       if (!imageUrl) {
-        throw new Error('Image URL / file path is required');
+        throw new Error('Image path is required');
       }
 
-      // Check existing document to clean up old uploaded file
-      const existing = await this.portfolioRepository.getPortfolio();
-      if (existing && existing.imageUrl && existing.imageUrl !== imageUrl) {
-        await this.deleteLocalFile(existing.imageUrl);
-      }
-
-      const fileType = this.getFileType(imageUrl);
-      const updatedPortfolio = await this.portfolioRepository.upsertPortfolio({
-        imageUrl,
-        fileType
-      });
-
-      return updatedPortfolio;
+      const newPortfolio = await this.portfolioRepository.create({ imageUrl });
+      return newPortfolio;
     } catch (error) {
-      console.error("Something went wrong in PortfolioService: updatePortfolio", error);
+      console.error("Something went wrong in PortfolioService: createPortfolio", error);
       throw error;
     }
   }
 
   /**
-   * Delete custom portfolio entry and clean up file on disk
+   * Delete a single portfolio item by ID and remove its image from disk
    */
-  async deletePortfolio() {
+  async deletePortfolio(id) {
     try {
-      const existing = await this.portfolioRepository.getPortfolio();
+      const existing = await this.portfolioRepository.get(id);
       if (!existing) {
         return null;
       }
 
+      // Unlink image file from disk if stored locally
       if (existing.imageUrl) {
         await this.deleteLocalFile(existing.imageUrl);
       }
 
-      await this.portfolioRepository.deletePortfolio();
-      return true;
+      const deletedItem = await this.portfolioRepository.destroy(id);
+      return deletedItem;
     } catch (error) {
       console.error("Something went wrong in PortfolioService: deletePortfolio", error);
       throw error;

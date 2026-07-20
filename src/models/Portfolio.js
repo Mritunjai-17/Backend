@@ -3,12 +3,7 @@ const mongoose = require('mongoose');
 const PortfolioSchema = new mongoose.Schema({
   imageUrl: {
     type: String,
-    required: [true, 'Portfolio image or file path is required']
-  },
-  fileType: {
-    type: String,
-    enum: ['image', 'pdf'],
-    default: 'image'
+    required: [true, 'Portfolio image path is required']
   }
 }, { 
   timestamps: true,

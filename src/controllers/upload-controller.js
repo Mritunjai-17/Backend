@@ -57,14 +57,14 @@ const upload = multer({
 });
 
 const portfolioFileFilter = (req, file, cb) => {
-  const allowedMimeTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'application/pdf'];
+  const allowedMimeTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
   const ext = path.extname(file.originalname).toLowerCase();
-  const allowedExts = ['.jpg', '.jpeg', '.png', '.webp', '.pdf'];
+  const allowedExts = ['.jpg', '.jpeg', '.png', '.webp'];
 
   if (allowedMimeTypes.includes(file.mimetype) || allowedExts.includes(ext)) {
     cb(null, true);
   } else {
-    cb(new Error('Invalid file type. Only JPEG, PNG, WEBP images, and PDF documents are allowed.'), false);
+    cb(new Error('Invalid file type. Only JPEG, PNG, and WEBP images are allowed.'), false);
   }
 };
 
@@ -99,7 +99,7 @@ const uploadImage = (req, res) => {
 };
 
 /**
- * Handle portfolio file upload & replace old file via PortfolioService
+ * Handle portfolio image upload & create new MongoDB document
  * @route POST /api/upload/portfolio-image
  */
 const uploadPortfolioImage = async (req, res) => {
@@ -114,10 +114,10 @@ const uploadPortfolioImage = async (req, res) => {
   const fileUrl = `/uploads/portfolio/${req.file.filename}`;
 
   try {
-    const data = await portfolioService.updatePortfolio(fileUrl);
-    return res.status(200).json({
+    const data = await portfolioService.createPortfolio(fileUrl);
+    return res.status(201).json({
       success: true,
-      message: 'Portfolio file uploaded successfully',
+      message: 'Portfolio image uploaded successfully',
       url: fileUrl,
       data
     });

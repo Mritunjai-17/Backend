@@ -19,6 +19,14 @@ export interface Blog {
   updatedAt: string;
 }
 
+export interface PortfolioItem {
+  _id: string;
+  imageUrl: string;
+  image?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export const apiService = {
   // Check if API backend is running
   checkBackendHealth: async (): Promise<boolean> => {
@@ -316,7 +324,7 @@ export const apiService = {
 
     const result = await res.json().catch(() => ({}));
     if (!res.ok) {
-      throw new Error(result.error || 'Failed to fetch portfolio data');
+      throw new Error(result.error || 'Failed to fetch portfolio gallery');
     }
     return result;
   },
@@ -324,7 +332,7 @@ export const apiService = {
   updatePortfolioImage: async (imageUrl: string): Promise<any> => {
     const baseUrl = API_BASE_URL.replace('/v1', '');
     const res = await fetch(`${baseUrl}/portfolio/image`, {
-      method: 'PUT',
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
@@ -334,7 +342,7 @@ export const apiService = {
 
     const result = await res.json().catch(() => ({}));
     if (!res.ok) {
-      throw new Error(result.error || 'Failed to update portfolio image');
+      throw new Error(result.error || 'Failed to add portfolio image');
     }
     return result;
   },
@@ -344,7 +352,7 @@ export const apiService = {
       const baseUrl = API_BASE_URL.replace('/v1', '');
       const xhr = new XMLHttpRequest();
       
-      xhr.open('PUT', `${baseUrl}/portfolio/image`);
+      xhr.open('POST', `${baseUrl}/portfolio/upload`);
       xhr.withCredentials = true;
       
       if (onProgress) {
@@ -388,9 +396,9 @@ export const apiService = {
     return apiService.uploadPortfolioFile(file, onProgress);
   },
 
-  deletePortfolioImage: async (): Promise<any> => {
+  deletePortfolioImage: async (id: string): Promise<any> => {
     const baseUrl = API_BASE_URL.replace('/v1', '');
-    const res = await fetch(`${baseUrl}/portfolio/image`, {
+    const res = await fetch(`${baseUrl}/portfolio/${id}`, {
       method: 'DELETE',
       credentials: 'include'
     });

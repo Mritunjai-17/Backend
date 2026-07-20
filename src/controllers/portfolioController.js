@@ -2,32 +2,32 @@ const PortfolioService = require('../services/portfolio-service');
 const portfolioService = new PortfolioService();
 
 /**
- * @desc    Get current portfolio document or default fallback
+ * @desc    Get all portfolio items
  * @route   GET /api/portfolio
  * @access  Public
  */
 exports.getPortfolio = async (req, res) => {
   try {
-    const portfolio = await portfolioService.getPortfolio();
+    const portfolios = await portfolioService.getAllPortfolios();
     res.status(200).json({
       success: true,
-      data: portfolio
+      data: portfolios
     });
   } catch (err) {
     console.error('Error in portfolioController: getPortfolio', err);
     res.status(500).json({
       success: false,
-      error: 'Failed to fetch portfolio data.'
+      error: 'Failed to fetch portfolio gallery.'
     });
   }
 };
 
 /**
- * @desc    Update or upload portfolio file/image
- * @route   PUT /api/portfolio/image or POST /api/portfolio
+ * @desc    Upload / create a new portfolio image entry
+ * @route   POST /api/portfolio/image or POST /api/portfolio
  * @access  Private (Approved Admin only)
  */
-exports.updatePortfolioImage = async (req, res) => {
+exports.createPortfolioImage = async (req, res) => {
   try {
     let filePath = req.body.imageUrl || req.body.image;
     
@@ -42,30 +42,39 @@ exports.updatePortfolioImage = async (req, res) => {
       });
     }
 
-    const portfolio = await portfolioService.updatePortfolio(filePath);
+    const portfolio = await portfolioService.createPortfolio(filePath);
 
-    res.status(200).json({
+    res.status(201).json({
       success: true,
-      message: 'Portfolio updated successfully.',
+      message: 'Portfolio image added successfully.',
       data: portfolio
     });
   } catch (err) {
-    console.error('Error in portfolioController: updatePortfolioImage', err);
+    console.error('Error in portfolioController: createPortfolioImage', err);
     res.status(500).json({
       success: false,
-      error: err.message || 'Failed to update portfolio image.'
+      error: err.message || 'Failed to add portfolio image.'
     });
   }
 };
 
 /**
- * @desc    Delete the portfolio image/document (reverts to default)
- * @route   DELETE /api/portfolio/image
+ * @desc    Delete a single portfolio image by ID
+ * @route   DELETE /api/portfolio/:id or DELETE /api/portfolio/image/:id
  * @access  Private (Approved Admin only)
  */
 exports.deletePortfolioImage = async (req, res) => {
   try {
-    const result = await portfolioService.deletePortfolio();
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        error: 'Portfolio item ID is required.'
+      });
+    }
+
+    const result = await portfolioService.deletePortfolio(id);
 
     if (!result) {
       return res.status(404).json({
@@ -76,7 +85,7 @@ exports.deletePortfolioImage = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: 'Portfolio deleted successfully. Reverted to default placeholder.'
+      message: 'Portfolio image deleted successfully.'
     });
   } catch (err) {
     console.error('Error in portfolioController: deletePortfolioImage', err);
@@ -86,3 +95,6 @@ exports.deletePortfolioImage = async (req, res) => {
     });
   }
 };
+
+// Aliases for compatibility
+exports.updatePortfolioImage = exports.createPortfolioImage;
