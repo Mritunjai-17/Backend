@@ -5,6 +5,7 @@ const adminRoutes = require('./adminRoutes');
 const portfolioRoutes = require('./portfolioRoutes');
 const authController = require('../controllers/authController');
 const contactController = require('../controllers/contact-controller');
+const subscriptionController = require('../controllers/subscription-controller');
 const uploadController = require('../controllers/upload-controller');
 const { validateContactInput, validateRegisterInput } = require('../middlewares/validationMiddleware');
 const { contactRateLimiter } = require('../middlewares/rateLimiter');
@@ -27,5 +28,11 @@ router.post('/contact', contactRateLimiter, validateContactInput, contactControl
 router.get('/contact', protect, contactController.getAll);
 router.patch('/contact/:id', protect, contactController.update);
 router.delete('/contact/:id', protect, contactController.deleteContact);
+
+// Subscription routes (endpoint: /api/subscribe)
+router.post('/subscribe', subscriptionController.create);
+router.get('/subscribe', protect, subscriptionController.getAll);
+router.patch('/subscribe/:id', protect, subscriptionController.update);
+router.delete('/subscribe/:id', protect, subscriptionController.deleteSubscription);
 
 module.exports = router;

@@ -4,6 +4,7 @@ import DashboardNavbar from './components/DashboardNavbar';
 import Blogs from './pages/Blogs';
 import Portfolios from './pages/Portfolios';
 import Contacts from './pages/Contacts';
+import Subscribers from './pages/Subscribers';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import AdminManagement from './pages/AdminManagement';
@@ -83,6 +84,8 @@ function App() {
         return <Portfolios />;
       case 'contact':
         return <Contacts />;
+      case 'subscribers':
+        return <Subscribers />;
       case 'admin':
         return <AdminManagement currentUser={user} />;
       default:

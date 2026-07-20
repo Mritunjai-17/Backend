@@ -11,7 +11,8 @@ export default function DashboardNavbar({ activeTab, setActiveTab, onLogout, use
   const navItems = [
     { id: 'blogs', label: 'Blogs' },
     { id: 'portfolio', label: 'Portfolio' },
-    { id: 'contact', label: 'Contact Messages' }
+    { id: 'contact', label: 'Contact Messages' },
+    { id: 'subscribers', label: 'Subscribers' }
   ];
 
   if (user && user.isApproved) {

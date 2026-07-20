@@ -27,6 +27,17 @@ export interface PortfolioItem {
   updatedAt?: string;
 }
 
+export interface Subscriber {
+  _id: string;
+  fullName: string;
+  email: string;
+  domain: string;
+  status: 'Active' | 'Contacted' | 'Unsubscribed';
+  isRead: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export const apiService = {
   // Check if API backend is running
   checkBackendHealth: async (): Promise<boolean> => {
@@ -408,5 +419,74 @@ export const apiService = {
       throw new Error(result.error || 'Failed to delete portfolio image');
     }
     return result;
+  },
+
+  // Subscriber Operations for CMS
+  getSubscribers: async (
+    page: number,
+    limit: number,
+    search: string,
+    status: string
+  ): Promise<{
+    data: Subscriber[];
+    total: number;
+    totalPages: number;
+    currentPage: number;
+    limit: number;
+  }> => {
+    const baseUrl = API_BASE_URL.replace('/v1', '');
+    const queryParams = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+      search,
+      status
+    });
+
+    const res = await fetch(`${baseUrl}/subscribe?${queryParams.toString()}`, {
+      method: 'GET',
+      credentials: 'include'
+    });
+
+    const result = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(result.error || 'Failed to fetch subscribers');
+    }
+
+    return result;
+  },
+
+  updateSubscriberStatus: async (
+    id: string,
+    updateData: { status?: string; isRead?: boolean }
+  ): Promise<any> => {
+    const baseUrl = API_BASE_URL.replace('/v1', '');
+    const res = await fetch(`${baseUrl}/subscribe/${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(updateData),
+      credentials: 'include'
+    });
+
+    const result = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(result.error || 'Failed to update subscriber status');
+    }
+
+    return result.data;
+  },
+
+  deleteSubscriber: async (id: string): Promise<void> => {
+    const baseUrl = API_BASE_URL.replace('/v1', '');
+    const res = await fetch(`${baseUrl}/subscribe/${id}`, {
+      method: 'DELETE',
+      credentials: 'include'
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Failed to delete subscriber');
+    }
   }
 };
