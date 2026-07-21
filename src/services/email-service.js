@@ -13,10 +13,14 @@ const sendContactAdminNotification = async (contact) => {
       return { error: { message: "ADMIN_EMAIL environment variable is missing" } };
     }
 
-    console.log(`📩 Sending Contact Admin Email to: ${adminEmail}...`);
+    const recipientEmails = adminEmail.includes(',') 
+      ? adminEmail.split(',').map(e => e.trim()).filter(Boolean) 
+      : adminEmail;
+
+    console.log(`📩 Sending Contact Admin Email to: ${JSON.stringify(recipientEmails)}...`);
     const response = await resend.emails.send({
       from: process.env.FROM_EMAIL || "onboarding@resend.dev",
-      to: adminEmail,
+      to: recipientEmails,
       subject: "📩 New Contact Form Submission",
       html: `
         <h2>New Contact Request</h2>
@@ -141,10 +145,14 @@ const sendSubscriptionAdminNotification = async (subscriber) => {
       return { error: { message: "ADMIN_EMAIL environment variable is missing" } };
     }
 
-    console.log(`📩 Sending Subscription Admin Notification to: ${adminEmail}...`);
+    const recipientEmails = adminEmail.includes(',') 
+      ? adminEmail.split(',').map(e => e.trim()).filter(Boolean) 
+      : adminEmail;
+
+    console.log(`📩 Sending Subscription Admin Notification to: ${JSON.stringify(recipientEmails)}...`);
     const response = await resend.emails.send({
       from: process.env.FROM_EMAIL || "onboarding@resend.dev",
-      to: adminEmail,
+      to: recipientEmails,
       subject: "📩 New Subscription",
       html: `
         <h2>New Subscriber Alert</h2>
