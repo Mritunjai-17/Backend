@@ -7,7 +7,9 @@ export const isDevelopment =
    window.location.hostname.endsWith('.local'));
 
 export const isProduction = !isDevelopment;
-export const API_BASE_URL = isProduction ? '/api/v1' : 'http://localhost:5000/api/v1';
+const envBackendUrl = import.meta.env.VITE_BACKEND_URL;
+export const BACKEND_URL = (envBackendUrl || (isDevelopment ? 'http://localhost:5000' : '')).replace(/\/$/, '');
+export const API_BASE_URL = `${BACKEND_URL}/api/v1`;
 
 export interface Blog {
   _id: string;
@@ -42,8 +44,7 @@ export const apiService = {
   // Check if API backend is running
   checkBackendHealth: async (): Promise<boolean> => {
     try {
-      const baseUrl = isProduction ? '' : 'http://localhost:5000';
-      const res = await fetch(`${baseUrl}/`, { method: 'GET' });
+      const res = await fetch(`${BACKEND_URL}/`, { method: 'GET' });
       return res.ok;
     } catch {
       return false;

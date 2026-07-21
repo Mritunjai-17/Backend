@@ -51,14 +51,7 @@ const setupAndStartServer = async () => {
     );
 
 
-    // Health Check & Root Route
-    app.get("/", (req, res) => {
-      res.status(200).json({
-        success: true,
-        message: "MIDIS Backend API is running successfully!",
-      });
-    });
-
+    // Health Check
     app.get("/api/health", (req, res) => {
       res.status(200).json({
         success: true,
@@ -71,6 +64,27 @@ const setupAndStartServer = async () => {
 
     // Static Uploads
     app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+
+    // Serve CMS Frontend Static Assets
+    const frontendDistPath = path.join(__dirname, "../CMS_Frontend/dist");
+    app.use(express.static(frontendDistPath));
+
+    // SPA Fallback: Serve index.html for non-API client-side routes
+    app.get("*", (req, res) => {
+      if (req.originalUrl.startsWith("/api") || req.originalUrl.startsWith("/uploads")) {
+        return res.status(404).json({
+          success: false,
+          error: "API endpoint not found",
+        });
+      }
+
+      const indexPath = path.join(frontendDistPath, "index.html");
+      res.sendFile(indexPath, (err) => {
+        if (err) {
+          res.status(500).send("CMS Frontend build not found. Please run the build script.");
+        }
+      });
+    });
 
     // Start Server
     app.listen(PORT, () => {
