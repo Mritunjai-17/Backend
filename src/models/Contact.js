@@ -4,15 +4,19 @@ const ContactSchema = new mongoose.Schema(
   {
     fullName: {
       type: String,
-      required: [true, 'Full name is required'],
-      trim: true
+      trim: true,
+      default: ''
+    },
+    name: {
+      type: String,
+      trim: true,
+      default: ''
     },
     email: {
       type: String,
       required: [true, 'Email address is required'],
       trim: true,
-      lowercase: true,
-      match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please provide a valid email address']
+      lowercase: true
     },
     phone: {
       type: String,
@@ -21,20 +25,11 @@ const ContactSchema = new mongoose.Schema(
     },
     service: {
       type: String,
-      required: [true, 'Service selection is required'],
-      enum: {
-        values: [
-          'Web Development',
-          'Graphic Designing',
-          'Digital Marketing',
-          'SEO Optimization',
-          'Social Media Management',
-          'Content Writing',
-          'Brand Identity',
-          'Other'
-        ],
-        message: 'Invalid service selected'
-      }
+      default: 'General Inquiry'
+    },
+    subject: {
+      type: String,
+      default: 'General Inquiry'
     },
     message: {
       type: String,
@@ -59,4 +54,5 @@ const ContactSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model('Contact', ContactSchema);
+module.exports = mongoose.models.Contact || mongoose.model('Contact', ContactSchema);
+

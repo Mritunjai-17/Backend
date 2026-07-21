@@ -348,7 +348,7 @@ function ContactTable({ contacts, onView, onReply, onDelete }: TableProps) {
                   {isUnread && <span style={styles.unreadDot} title="Unread Message" />}
                 </td>
                 <td>
-                  <div style={{ fontWeight: isUnread ? 700 : 600 }}>{contact.fullName}</div>
+                  <div style={{ fontWeight: isUnread ? 700 : 600 }}>{contact.fullName || contact.name || 'N/A'}</div>
                 </td>
                 <td>
                   <div style={{ fontSize: '0.85rem' }}>{contact.email}</div>
@@ -359,7 +359,7 @@ function ContactTable({ contacts, onView, onReply, onDelete }: TableProps) {
                   )}
                 </td>
                 <td>
-                  <span style={styles.serviceBadge}>{contact.service}</span>
+                  <span style={styles.serviceBadge}>{contact.service || contact.subject || 'General'}</span>
                 </td>
                 <td>
                   <div style={styles.messagePreview} title={contact.message}>
@@ -446,7 +446,7 @@ function ContactDetailsModal({ contact, onClose, onReply, onDelete }: ViewModalP
             <div style={styles.detailItem}>
               <span style={styles.detailLabel}>From</span>
               <div style={styles.detailValue}>
-                <strong style={{ fontSize: '1.05rem', color: 'var(--text-primary)' }}>{contact.fullName}</strong>
+                <strong style={{ fontSize: '1.05rem', color: 'var(--text-primary)' }}>{contact.fullName || contact.name || 'N/A'}</strong>
               </div>
             </div>
 
@@ -477,7 +477,7 @@ function ContactDetailsModal({ contact, onClose, onReply, onDelete }: ViewModalP
               <div style={styles.detailValue}>
                 <span style={styles.iconText}>
                   <Briefcase size={14} style={{ color: 'var(--primary)' }} />
-                  {contact.service}
+                  {contact.service || contact.subject || 'General'}
                 </span>
               </div>
             </div>

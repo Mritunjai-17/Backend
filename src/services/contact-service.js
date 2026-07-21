@@ -12,21 +12,37 @@ class ContactService {
 
   async createContact(data) {
     try {
-      const { name, email, subject, message } = data;
+      const contactName = data.fullName || data.name || "Valued Customer";
+      const contactService = data.service || data.subject || "General Inquiry";
 
-      if (!name || !email || !subject || !message) {
-        throw new Error("Name, email, subject, and message are required.");
+      if (!data.email || !data.message) {
+        throw new Error("Email and message are required.");
       }
 
       const contact = await this.contactRepository.create({
-        name,
-        email,
-        subject,
-        message,
+        fullName: contactName,
+        name: contactName,
+        email: data.email,
+        phone: data.phone || "",
+        service: contactService,
+        subject: contactService,
+        message: data.message,
+        status: "New",
+        isRead: false,
+        isDeleted: false,
       });
 
-      await sendContactAdminNotification(contact);
-      await sendContactThankYouEmail(contact);
+      try {
+        await sendContactAdminNotification(contact);
+      } catch (adminErr) {
+        console.error("❌ Failed sending contact admin notification:", adminErr.message || adminErr);
+      }
+
+      try {
+        await sendContactThankYouEmail(contact);
+      } catch (userErr) {
+        console.error("❌ Failed sending contact thank you email:", userErr.message || userErr);
+      }
 
       return contact;
     } catch (error) {
@@ -41,13 +57,19 @@ class ContactService {
       const limit = Math.max(1, parseInt(options.limit) || 10);
       const skip = (page - 1) * limit;
 
-      const filter = {};
+      const filter = { isDeleted: false };
+
+      if (options.status && options.status !== "All") {
+        filter.status = options.status;
+      }
 
       if (options.search) {
         const searchRegex = new RegExp(options.search.trim(), "i");
         filter.$or = [
+          { fullName: searchRegex },
           { name: searchRegex },
           { email: searchRegex },
+          { service: searchRegex },
           { subject: searchRegex },
           { message: searchRegex },
         ];
