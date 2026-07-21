@@ -1,5 +1,10 @@
 const ContactRepository = require("../repository/contact-repository");
 
+const {
+  sendContactAdminNotification,
+  sendContactThankYouEmail
+} = require("./email-service");
+
 class ContactService {
   constructor() {
     this.contactRepository = new ContactRepository();
@@ -19,6 +24,9 @@ class ContactService {
         subject,
         message,
       });
+
+      await sendContactAdminNotification(contact);
+      await sendContactThankYouEmail(contact);
 
       return contact;
     } catch (error) {

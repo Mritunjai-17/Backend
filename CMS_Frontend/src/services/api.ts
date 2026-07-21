@@ -170,16 +170,47 @@ export const apiService = {
     }
   },
 
-  // Contact Form Submission
+  // Public Contact Form Submission
   submitContactForm: async (data: {
-    fullName: string;
+    fullName?: string;
+    name?: string;
     email: string;
     phone?: string;
-    service: string;
+    service?: string;
+    subject?: string;
     message: string;
   }): Promise<{ success: boolean; message: string }> => {
     const baseUrl = API_BASE_URL.replace('/v1', '');
     const res = await fetch(`${baseUrl}/contact`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        fullName: data.fullName || data.name,
+        name: data.name || data.fullName,
+        email: data.email,
+        phone: data.phone,
+        service: data.service || data.subject,
+        subject: data.subject || data.service || 'General Inquiry',
+        message: data.message
+      })
+    });
+
+    const result = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(result.message || result.error || 'Failed to submit contact request');
+    }
+
+    return result;
+  },
+
+  // Public Newsletter / Service Domain Subscription
+  subscribeUser: async (data: {
+    fullName: string;
+    email: string;
+    domain: string;
+  }): Promise<{ success: boolean; message: string; data?: any }> => {
+    const baseUrl = API_BASE_URL.replace('/v1', '');
+    const res = await fetch(`${baseUrl}/subscribe`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
@@ -187,11 +218,12 @@ export const apiService = {
 
     const result = await res.json().catch(() => ({}));
     if (!res.ok) {
-      throw new Error(result.error || 'Failed to submit contact request');
+      throw new Error(result.message || result.error || 'Failed to subscribe');
     }
 
     return result;
   },
+
 
   // Get contact messages for admin (filtered, searchable, paginated)
   getContacts: async (
@@ -442,7 +474,7 @@ export const apiService = {
       status
     });
 
-    const res = await fetch(`${baseUrl}/Subscribe?${queryParams.toString()}`, {
+    const res = await fetch(`${baseUrl}/subscribe?${queryParams.toString()}`, {
       method: 'GET',
       credentials: 'include'
     });

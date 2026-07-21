@@ -12,48 +12,68 @@ const cookieParser = require("cookie-parser");
 
 const connectDB = require("./config/db");
 const apiRoutes = require("./routes");
-const { sendTestEmail } = require("./services/email-service");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 const setupAndStartServer = async () => {
-  // Connect Database
-  await connectDB();
+  try {
+    // Connect Database
+    await connectDB();
 
-  // Middlewares
-  app.use(express.json());
-  app.use(express.urlencoded({ extended: true }));
-  app.use(cookieParser());
+    // Middlewares
+    app.use(express.json());
+    app.use(express.urlencoded({ extended: true }));
+    app.use(cookieParser());
 
-  app.use(
-    cors({
-      origin: process.env.CLIENT_URL || "http://localhost:5173",
-      credentials: true,
-    })
-  );
+    const allowedOrigins = [
+      process.env.CLIENT_URL,
+      "http://localhost:5173",
+      "http://localhost:8080",
+      "http://localhost:3000",
+      "http://127.0.0.1:5173",
+      "http://127.0.0.1:8080",
+      "http://127.0.0.1:3000",
+    ].filter(Boolean);
 
-  // Health Check
-  app.get("/api/health", (req, res) => {
-    res.json({
-      success: true,
-      message: "MIDIS CMS API Running",
+    app.use(
+      cors({
+        origin: (origin, callback) => {
+          // Allow requests with no origin (e.g. mobile apps, Postman) or matching dev origins
+          if (!origin || allowedOrigins.includes(origin) || /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+            callback(null, true);
+          } else {
+            callback(null, true);
+          }
+        },
+        credentials: true,
+      })
+    );
+
+
+    // Health Check
+    app.get("/api/health", (req, res) => {
+      res.status(200).json({
+        success: true,
+        message: "MIDIS CMS API Running",
+      });
     });
-  });
 
-  // API Routes
-  app.use("/api", apiRoutes);
+    // API Routes
+    app.use("/api", apiRoutes);
 
-  // Static Uploads
-  app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+    // Static Uploads
+    app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
-  // Start Server
-  app.listen(PORT, async () => {
-    console.log(`🚀 Server started on port ${PORT}`);
-
-    // Send Test Email
-    await sendTestEmail();
-  });
+    // Start Server
+    app.listen(PORT, () => {
+      console.log(`🚀 Server started on port ${PORT}`);
+    });
+  } catch (error) {
+    console.error("❌ Failed to start server:", error);
+    process.exit(1);
+  }
 };
 
+// Server setup updated with fresh env
 setupAndStartServer();

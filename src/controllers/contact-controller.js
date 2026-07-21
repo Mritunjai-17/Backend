@@ -8,14 +8,15 @@ const contactService = new ContactService();
  */
 const create = async (req, res) => {
   try {
-    const { name, email, subject, message } = req.body;
+    const { name, fullName, email, subject, service, message } = req.body;
 
     const response = await contactService.createContact({
-      name,
+      name: name || fullName,
       email,
-      subject,
+      subject: subject || service || "General Inquiry",
       message,
     });
+
 
     return res.status(201).json({
       success: true,
