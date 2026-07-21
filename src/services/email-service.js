@@ -7,16 +7,23 @@ const resend = require("../config/resend");
 // Email to Admin
 const sendContactAdminNotification = async (contact) => {
   try {
+    const adminEmail = process.env.ADMIN_EMAIL;
+    if (!adminEmail) {
+      console.error("❌ Contact Admin Email Error: ADMIN_EMAIL environment variable is missing.");
+      return { error: { message: "ADMIN_EMAIL environment variable is missing" } };
+    }
+
+    console.log(`📩 Sending Contact Admin Email to: ${adminEmail}...`);
     const response = await resend.emails.send({
       from: process.env.FROM_EMAIL || "onboarding@resend.dev",
-      to: process.env.ADMIN_EMAIL,
+      to: adminEmail,
       subject: "📩 New Contact Form Submission",
       html: `
         <h2>New Contact Request</h2>
 
-        <p><strong>Name:</strong> ${contact.name}</p>
+        <p><strong>Name:</strong> ${contact.name || contact.fullName || 'N/A'}</p>
         <p><strong>Email:</strong> ${contact.email}</p>
-        <p><strong>Subject:</strong> ${contact.subject}</p>
+        <p><strong>Subject:</strong> ${contact.subject || 'General Inquiry'}</p>
         <p><strong>Message:</strong></p>
 
         <p>${contact.message}</p>
@@ -24,25 +31,32 @@ const sendContactAdminNotification = async (contact) => {
     });
 
     if (response?.error) {
-      console.error("❌ Contact Admin Email Resend Error:", response.error.message);
+      console.error("❌ Contact Admin Email Resend Error:", response.error.message || response.error);
     } else {
       console.log("✅ Contact Admin Email Sent (ID:", response?.data?.id, ")");
     }
     return response;
   } catch (error) {
     console.error("❌ Contact Admin Email Unexpected Error:", error);
+    return { error: error.message };
   }
 };
 
 // Thank You Email to User
 const sendContactThankYouEmail = async (contact) => {
   try {
+    if (!contact?.email) {
+      console.error("❌ Contact User Email Error: Recipient email is missing.");
+      return { error: { message: "Recipient email missing" } };
+    }
+
+    console.log(`📩 Sending Contact Thank You Email to: ${contact.email}...`);
     const response = await resend.emails.send({
       from: process.env.FROM_EMAIL || "onboarding@resend.dev",
       to: contact.email,
       subject: "Thank You for Contacting MIDIS",
       html: `
-        <h2>Hello ${contact.name},</h2>
+        <h2>Hello ${contact.name || contact.fullName || 'Valued Customer'},</h2>
 
         <p>Thank you for contacting MIDIS.</p>
 
@@ -59,13 +73,14 @@ const sendContactThankYouEmail = async (contact) => {
     });
 
     if (response?.error) {
-      console.error("❌ Contact User Email Resend Error:", response.error.message);
+      console.error("❌ Contact User Email Resend Error:", response.error.message || response.error);
     } else {
       console.log("✅ Contact User Email Sent (ID:", response?.data?.id, ")");
     }
     return response;
   } catch (error) {
     console.error("❌ Contact User Email Unexpected Error:", error);
+    return { error: error.message };
   }
 };
 
@@ -76,12 +91,18 @@ const sendContactThankYouEmail = async (contact) => {
 // Welcome Email
 const sendSubscriptionWelcomeEmail = async (subscriber) => {
   try {
+    if (!subscriber?.email) {
+      console.error("❌ Subscription Welcome Email Error: Recipient email is missing.");
+      return { error: { message: "Recipient email missing" } };
+    }
+
+    console.log(`📩 Sending Subscription Welcome Email to: ${subscriber.email}...`);
     const response = await resend.emails.send({
       from: process.env.FROM_EMAIL || "onboarding@resend.dev",
       to: subscriber.email,
       subject: "Welcome to MIDIS",
       html: `
-        <h2>Hello ${subscriber.fullName},</h2>
+        <h2>Hello ${subscriber.fullName || 'Subscriber'},</h2>
 
         <p>Thank you for subscribing to MIDIS.</p>
 
@@ -100,27 +121,35 @@ const sendSubscriptionWelcomeEmail = async (subscriber) => {
     });
 
     if (response?.error) {
-      console.error("❌ Subscription Welcome Email Resend Error:", response.error.message);
+      console.error("❌ Subscription Welcome Email Resend Error:", response.error.message || response.error);
     } else {
       console.log("✅ Subscription Welcome Email Sent (ID:", response?.data?.id, ")");
     }
     return response;
   } catch (error) {
     console.error("❌ Subscription Welcome Email Unexpected Error:", error);
+    return { error: error.message };
   }
 };
 
 // Email to Admin
 const sendSubscriptionAdminNotification = async (subscriber) => {
   try {
+    const adminEmail = process.env.ADMIN_EMAIL;
+    if (!adminEmail) {
+      console.error("❌ Subscription Admin Email Error: ADMIN_EMAIL environment variable is missing.");
+      return { error: { message: "ADMIN_EMAIL environment variable is missing" } };
+    }
+
+    console.log(`📩 Sending Subscription Admin Notification to: ${adminEmail}...`);
     const response = await resend.emails.send({
       from: process.env.FROM_EMAIL || "onboarding@resend.dev",
-      to: process.env.ADMIN_EMAIL,
+      to: adminEmail,
       subject: "📩 New Subscription",
       html: `
-        <h2>New Subscriber</h2>
+        <h2>New Subscriber Alert</h2>
 
-        <p><strong>Name:</strong> ${subscriber.fullName}</p>
+        <p><strong>Name:</strong> ${subscriber.fullName || subscriber.name || 'N/A'}</p>
 
         <p><strong>Email:</strong> ${subscriber.email}</p>
 
@@ -129,13 +158,14 @@ const sendSubscriptionAdminNotification = async (subscriber) => {
     });
 
     if (response?.error) {
-      console.error("❌ Subscription Admin Email Resend Error:", response.error.message);
+      console.error("❌ Subscription Admin Email Resend Error:", response.error.message || response.error);
     } else {
       console.log("✅ Subscription Admin Email Sent (ID:", response?.data?.id, ")");
     }
     return response;
   } catch (error) {
     console.error("❌ Subscription Admin Email Unexpected Error:", error);
+    return { error: error.message };
   }
 };
 

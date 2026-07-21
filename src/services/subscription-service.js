@@ -31,10 +31,19 @@ class SubscriptionService {
       }
 
       // ==========================
-      // Send Emails
+      // Send Emails (Independent execution)
       // ==========================
-      await sendSubscriptionWelcomeEmail(subscriber);
-      await sendSubscriptionAdminNotification(subscriber);
+      try {
+        await sendSubscriptionAdminNotification(subscriber);
+      } catch (adminErr) {
+        console.error("❌ Error sending subscription admin notification email:", adminErr.message || adminErr);
+      }
+
+      try {
+        await sendSubscriptionWelcomeEmail(subscriber);
+      } catch (welcomeErr) {
+        console.error("❌ Error sending subscription welcome email:", welcomeErr.message || welcomeErr);
+      }
 
       return subscriber;
     } catch (error) {
