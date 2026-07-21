@@ -51,7 +51,14 @@ const setupAndStartServer = async () => {
     );
 
 
-    // Health Check
+    // Health Check & Root Route
+    app.get("/", (req, res) => {
+      res.status(200).json({
+        success: true,
+        message: "MIDIS Backend API is running successfully!",
+      });
+    });
+
     app.get("/api/health", (req, res) => {
       res.status(200).json({
         success: true,
